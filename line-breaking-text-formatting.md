@@ -16,6 +16,8 @@ publication and its date appear, and notice is given that copying is
 by permission of the Association for Computing Machinery. To copy
 otherwise, or to republish, requires a fee and/or specific permission.
 
+(c) 1981 ACM 0-89791-050-8/81/0600/0117  $00.75
+
 ## ABSTRACT
 
 A basic problem in text formatting is that of determining the break
@@ -85,40 +87,40 @@ left out for most of this presentation.
 
 In sections 2 to 4 the algorithms are presented for
 formatting. Section 5 discusses extensions to typesetting and
-hpyenations.
+hyphenations.
 
 ## 2. THE LINE-BY-LINE METHOD
 
 It is assumed that we have as input a paragraph consisting of a
 sequence of N>0 words. Here, a words is simply a string of non-blank
 characters. The number of characters in each word is given in the
-array W[I], I <= I<=N. The paragraph will be formatted into M lines of
-D charactesr each. The line breaking problem is solved by specifying
-for the J-th line, 1<=J=M, the index S[J] of the first word of the
+array W[I], I&le;I&le;N. The paragraph will be formatted into M lines of
+D characters each. The line breaking problem is solved by specifying
+for the J-th line, 1&le;J&le;M, the index S[J] of the first word of the
 line. (The major variables used by all the algorithms are summarized
 in table 1.)
 
 <table>
 <caption>Table 1: Major variables referenced by the algorithm</caption>
-<tr><td>N</td><td>number of words in paragraph</td></tr>
-<tr><td>M         </td><td> number of formatted lines</td></tr>
-<tr><td>W[I]      </td><td> maxium number of characters per line</td></tr>
-<tr><td>S[I]      </td><td> index of first word in I-th line, that is I-th line starts with W[S[I]].</td></tr>
-<tr><td>L[I]      </td><td> length of I-th formatted line before distribution of surplus spaces.</td></tr>
-<tr><td>E[I]      </td><td> index of first word, line I, for earliest breaking</td></tr>
-<tr><td>F[K,J]    </td><td> formatted length from I-th to J-th word</td></tr>
-<tr><td>C[I,J]    </td><td> cost function, dynamic programming</td></tr>
-<tr><td>c[I]      </td><td> cost function, line-breaker, = C[I,N]</td></tr>
+<tr><td style="text-align:right">N     </td><td>number of words in paragraph</td></tr>
+<tr><td style="text-align:right">M     </td><td> number of formatted lines</td></tr>
+<tr><td style="text-align:right">W[I]  </td><td> maximum number of characters per line</td></tr>
+<tr><td style="text-align:right">S[I]  </td><td> index of first word in I-th line, that is I-th line starts with W[S[I]].</td></tr>
+<tr><td style="text-align:right">L[I]  </td><td> length of I-th formatted line before distribution of surplus spaces.</td></tr>
+<tr><td style="text-align:right">E[I]  </td><td> index of first word, line I, for earliest breaking</td></tr>
+<tr><td style="text-align:right">F[K,J]</td><td> formatted length from I-th to J-th word</td></tr>
+<tr><td style="text-align:right">C[I,J]</td><td> cost function, dynamic programming</td></tr>
+<tr><td style="text-align:right">c[I]  </td><td> cost function, line-breaker, = C[I,N]</td></tr>
 </table>
 
 The line-by-line method is the one that immediately comes to mind and
 has been used in many text formatting programs. It is strongly
-appealing in its simplicity. THe computation of the break points of
+appealing in its simplicity. The computation of the break points of
 equivalently the indices for words at the beginning of each line is
 given in algorithm LINE-BY-LINE. Note that arrays L, S and W need not
 be saved in actual implementations unless they are required for some
-othe rpurposes. They are kept in this presentation to facilitate the
-discussion in subsequent sections. Clearly, then, theline-by-line
+other purposes. They are kept in this presentation to facilitate the
+discussion in subsequent sections. Clearly, then, the line-by-line
 method can be implemented so that it has O(N) worst case time
 complexity and requires storage mainly for the one line of
 output. (The algorithms are also given in a PASCAL-like fashion in the
@@ -144,46 +146,176 @@ appendix).
 ---------------------------------------------
 ```
 
-The effect of algorith LINE-BY-LINE on a short sample paragraph from [^6], formatted 47 charactesr to a line, is given below. The surplus spaces in this paragraph have been distributed according to the alternate left and right fashion. Note that of the seven lines in the paragraph, the first five have 1, 2, 6, 10, 7 surplus spaces respectively. This means that in the fourth line, 10 spaces have to be distributed between six words, resulting in triple spacing between some of them. Pathological cases similar to this and worse abound in th eliterature. It would seem that this formatting can be improved by transfering the last words of the first, second, third and fourth lines to the beginning of the second, third, fourth and fifth lines respectively. This has been done in Sample Paragraph #2 where the surplus spaces are obviously more evenly distributed among the lines. In fact, the first paragraph has eight occurrences of triple spacing compared to two in the second.
+The effect of algorithm LINE-BY-LINE on a short sample paragraph from
+[^6], formatted 47 characters to a line, is given below. The surplus
+spaces in this paragraph have been distributed according to the
+alternate left and right fashion. Note that of the seven lines in the
+paragraph, the first five have 1, 2, 6, 10, 7 surplus spaces
+respectively. This means that in the fourth line, 10 spaces have to be
+distributed between six words, resulting in triple spacing between
+some of them. Pathological cases similar to this and worse abound in
+the literature. It would seem that this formatting can be improved by
+transferring the last words of the first, second, third and fourth
+lines to the beginning of the second, third, fourth and fifth lines
+respectively. This has been done in Sample Paragraph #2 where the
+surplus spaces are obviously more evenly distributed among the
+lines. In fact, the first paragraph has eight occurrences of triple
+spacing compared to two in the second.
 
 Sample Paragraph # 1:
 
 
 ```
-  We  live in a print-oriented society. Every day
-  we produce a huge volume of  printed  material,
-  ranging   from  handbills  to  heavy  reference
-  books.   Despite   the   mushroom   growth   of
-  electronic   media,   print  remains  the  most
-  versatile and most widely used medium for  mass
-  communication.
+We  live in a print-oriented society. Every day
+we produce a huge volume of  printed  material,
+ranging   from  handbills  to  heavy  reference
+books.   Despite   the   mushroom   growth   of
+electronic   media,   print  remains  the  most
+versatile and most widely used medium for  mass
+communication.
 ```
 
 Sample Paragraph #2:
 
 ```
-  We  live  in  a  print-oriented  society. Every
-  day  we  produce  a  huge  volume  of   printed
-  material,   ranging  from  handbills to   heavy
-  reference books. Despite  the  mushroom  growth
-  of  electronic  media,  print  remains the most
-  versatile and most widely used medium for  mass
-  communication.
+We  live  in  a  print-oriented  society. Every
+day  we  produce  a  huge  volume  of   printed
+material,   ranging  from  handbills to   heavy
+reference books. Despite  the  mushroom  growth
+of  electronic  media,  print  remains the most
+versatile and most widely used medium for  mass
+communication.
 ```
 
 ## 3. A DYNAMIC PROGRAMMING SOLUTION
 
+The improvements to the sample paragraph indicated in the preceding
+section demonstrate that line breaking as done by the line-by-line
+method does not always produce the best results. In this section, a
+dynamic programming solution for optimal line breaking is
+presented. This idea is not new. Knuth [^5] indicates that he uses
+such an approach for line breaking in his typesetting system.
+
+The key to the improvements in the preceding section arise from the
+fact that when a sequence of words has to be broken into two or more
+lines it should be broken in such a way that the lines are equally
+used up or very nearly so. The idea is to eliminate extreme variations
+in the amount of surplus space to be distributed among the lines. In
+other words, justified text will loo9k better if the unjustified
+version has minimum raggedness.
+
+A second important idea to keep in mind is that if a sequence of words
+will fit on one line, then there is no point in, and no attempt should
+be made at, splitting it into several lines.
+
+These considerations lead to the following definitions. First, the
+formatted length F[I,J] of words I to J is defined as the width that
+the words will occupy. Thus
+
+```    F[I,J] = W[I] + 1 + W[I+1} + 1 + ... + W[J]
+```
+
+Second, the following cost function is suggested for minimization
+
+<table>
+<tr><td rowspan=3>C[I,J] =</td><td>2</td>        <td>if F[I,J] &le; D & J = N</td></tr>
+<tr><td>1+1/F[I,J]</td>                          <td>if F[I,J] &le; D & J &lt; N</td></tr>
+<tr><TD>1+min(C[I,K] * C[K+1,J], I &le; K &lt; J)</td><td>otherwise</td></tr>
+</table>
+
+The cost function, C[I,J], will be the cost of formatting words I to
+J. It recognizes the fact that the last line of a paragraph need to be
+(and is not normally) aligned with the right margin. This case is
+recognized by the condition J=N. It also attempts no splitting of a
+sequence of words that will fit on one line. Such a sequence simply
+contributes a fact of 1+1/F[I,J] to the cost of the paragraph. When a
+split has to be made, however, the break point is chosen from all
+possible candidates so as to minimize the overall cost.
+
+The discussion following presentation of the line-by-line algorithm
+suggests the following definition of optimally formatted text which we
+shall adopt. A paragraph W[1]...W[N] is optimally formatted if it is
+broken into the fewest number of lines and the surplus spaces on each
+line, not counting the last line, are as close together as possible.
+
+We argue that minimizing C[1,N] will result in an optimally formatted
+paragraph. First note that if a line is split into two the cost
+function will increase. Hence, a paragraph with minimum C[1,N] will
+have the fewest number of lines. Secondly, we show that the function
+is minimized by having equal length lines (not counting the last
+one). Let the line lengths for the first m-1 lines be x[1], x[2], ...,
+x[m-1]. The final cost is twice the product of (1+1/x[i]),
+1&le;i&le;m-1. Now, given that a+b is constant it is straightforward to
+prove that (1+1/a)(1+1/b) is minimal when a=b. In the general case when
+m>3, assume the length x[i], 1&le;i&le;m-1 are optimal and x[j] is not
+equal to x[j+1] for some j. Then we can lower the overall cost by
+keeping the other x[i] and replacing x[j], x[j+1] by
+(x[j]+x[j+1])/2. This contradicts the fact that we had the minimum
+cost.
+
+In order to compute the optimal breaking indices, note that if
+W[I]...W[J] has to be broken into W[I]...W[K] and W[K+1]...W[J], then
+both subsequences W[I]...W[K] and W[K+1]...W[J] must be optimally
+formatted this time taking into consideration the last line of any
+subsequence which is not the last line of the paragraph. The
+computation of optimum cost C[1,N] is given by algorithm DYNAMIC. It
+is similar to many dynamic programming algorithms, [^1][^2] for
+example, and the modifications required to keep track of the breaking
+indices is a straightforward exercise.
+
+It is also straightforward to determine that algorithm DYNAMIC takes
+O(N<sup>2</sup>) space and O(N<sup>3</sup>) time. The algorithm is
+thus too costly for regular use and one would rather put up with the
+poorer results of line-by-line processing. However, by combining
+features of this algorithm and the line-by-line one, a much faster
+optimal solution can be devised.
+
+As expected, application of the dynamic programming approach to the
+sample paragraph yields the much improved version given in Sample
+Paragraph #2.
+
+```
+ALGORITHM DYNAMIC
+---------------------------------------------
+    /computation of C[1,N/
+    /Only upper diagonal of C computed/
+    /C, D, F, N and W are explained in table 1/
+(1) /initialize/
+    C[I,J] <- F[I,J] <- 0, 1<=I<=N, 1<=J<=N.
+    F[I,I] <- W[I], C[I,I] <- 1+1/W[i], 1<=I<=N.
+    I <- N - 1
+(2) /loop on rows form last to first/
+    J <- I + 1
+(3) /loop on columns from I+1 to N/
+    /calculate length/
+    F[I,J] <- F[I,J-1] + 1 + W[J]
+    if F[I,J] > D then goto (5)
+(4) /words I to J fit on one line/
+    if J = N then C[I,J] <- 2
+             else C[I,J] <- 1 + 1/F[I,J].
+    goto (6)
+(5) /split words I to J/
+    C[I,J] <- minimum(C[I,K] * C[K+1,J], I<=K<J)
+(6) /end loop on columns/
+    J <- J + 1, if J <= N then goto (3)
+(7) /end loop on rows/
+    I <- I - 1, if I > 0 then goto (2)
+---------------------------------------------
+```
+
 ## 4. THE LINE BREAKER
+
+
 
 ## 5. EXTENSIONS
 
 ## 6. EXTENSIONS
 
-## ACKNOWLEDGEMENTS
+## ACKNOWLEDGMENTS
 
 The author is grateful to the referees for their very helpful
-suggestsions and to his colleagues Karl Ottenstein and John Lowther
-for proof-reading several versions of the paper.
+suggestions and to his colleagues Karl Ottenstein and John Lowther for
+proof-reading several versions of the paper.
 
 ## REFERENCES
 
