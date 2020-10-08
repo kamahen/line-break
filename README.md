@@ -10,7 +10,8 @@ paper.
 
 The paper _On the Line Breaking Problem in Text Formatting_ was
 originally published in a special edition of SIGPLAN Notices, in
-fixed-width form. It has been transcribed to simple Markdown and a few
-minor typos have been fixed.
-It has its own Copyright notice.
+[line-breaking-text-formatting-achugbue.pdf](fixed-width form). It has
+been transcribed to simple
+[line-breaking-text-formatting-achugbue.md](Markdown) and a few minor
+typos have been fixed.  It has its own Copyright notice.
 
