@@ -108,7 +108,7 @@ in table 1.)
 <tr><td style="text-align:right">S[I]  </td><td> index of first word in I-th line, that is I-th line starts with W[S[I]].</td></tr>
 <tr><td style="text-align:right">L[I]  </td><td> length of I-th formatted line before distribution of surplus spaces.</td></tr>
 <tr><td style="text-align:right">E[I]  </td><td> index of first word, line I, for earliest breaking</td></tr>
-<tr><td style="text-align:right">F[K,J]</td><td> formatted length from I-th to J-th word</td></tr>
+<tr><td style="text-align:right">F[I,J]</td><td> formatted length from I-th to J-th word</td></tr>
 <tr><td style="text-align:right">C[I,J]</td><td> cost function, dynamic programming</td></tr>
 <tr><td style="text-align:right">c[I]  </td><td> cost function, line-breaker, = C[I,N]</td></tr>
 </table>
@@ -122,15 +122,13 @@ be saved in actual implementations unless they are required for some
 other purposes. They are kept in this presentation to facilitate the
 discussion in subsequent sections. Clearly, then, the line-by-line
 method can be implemented so that it has O(N) worst case time
-complexity and requires storage mainly for the one line of
-output. (The algorithms are also given in a PASCAL-like fashion in the
+complexity and requires storage mainly for the one line of output.
+(The algorithms are also given in a PASCAL-like fashion in the
 appendix).
 
+
 ### ALGORITHM LINE-BY-LINE
-
-
 ```
----------------------------------------------
     /D,L,M,N,S,W are as given in Table 1/
 (1) /initialize/
     M <- 1, S[1 <- 1, L[M] <- W[I]
@@ -143,7 +141,6 @@ appendix).
     M <- M + 1, S[M] <- I, L[M] <- W[I]
 (4) /test for completion/
     I <= I + 1, if I <= N then goto (2)
----------------------------------------------
 ```
 
 The effect of algorithm LINE-BY-LINE on a short sample paragraph from
@@ -212,7 +209,8 @@ These considerations lead to the following definitions. First, the
 formatted length F[I,J] of words I to J is defined as the width that
 the words will occupy. Thus
 
-```    F[I,J] = W[I] + 1 + W[I+1} + 1 + ... + W[J]
+```
+F[I,J] = W[I] + 1 + W[I+1} + 1 + ... + W[J]
 ```
 
 Second, the following cost function is suggested for minimization
@@ -274,9 +272,8 @@ As expected, application of the dynamic programming approach to the
 sample paragraph yields the much improved version given in Sample
 Paragraph #2.
 
+### ALGORITHM DYNAMIC
 ```
-ALGORITHM DYNAMIC
----------------------------------------------
     /computation of C[1,N/
     /Only upper diagonal of C computed/
     /C, D, F, N and W are explained in table 1/
@@ -284,7 +281,7 @@ ALGORITHM DYNAMIC
     C[I,J] <- F[I,J] <- 0, 1<=I<=N, 1<=J<=N.
     F[I,I] <- W[I], C[I,I] <- 1+1/W[i], 1<=I<=N.
     I <- N - 1
-(2) /loop on rows form last to first/
+(2) /loop on rows from last to first/
     J <- I + 1
 (3) /loop on columns from I+1 to N/
     /calculate length/
@@ -300,7 +297,6 @@ ALGORITHM DYNAMIC
     J <- J + 1, if J <= N then goto (3)
 (7) /end loop on rows/
     I <- I - 1, if I > 0 then goto (2)
----------------------------------------------
 ```
 
 ## 4. THE LINE BREAKER
@@ -354,139 +350,139 @@ proof-reading several versions of the paper.
 
 
 ```
-    PROCEDURE LINE-BY-LINE;
-    (* D,L,M,N,S,W ARE EXPLAINED IN TABLE 1 *)
+PROCEDURE LINE-BY-LINE;
+(* D,L,M,N,S,W ARE EXPLAINED IN TABLE 1 *)
 
+BEGIN
+    (* INITIALIZE *)
+    M := 1;
+    S[1] := 1;
+    L[M] := W[1];
+
+    FOR I := 2 TO N DO
     BEGIN
-        (* INITIALIZE *)
-        M := 1;
-        S[1] := 1;
-        L[M] := W[1];
 
-        FOR I := 2 TO N DO
+        (* ADD NEXT WORD TO CURRENT LINE *)
+        L[M] :- L[M] + 1 + W[I];
+
+        IF (L[M] > D) THEN
         BEGIN
+            L[M] :- L[M] - 1 - W[I];
 
-            (* ADD NEXT WORD TO CURRENT LINE *)
-            L[M] :- L[M] + 1 + W[I];
-
-            IF (L[M] > D) THEN
-            BEGIN
-                L[M] :- L[M] - 1 - W[I];
-
-                (* START NEW LINE *)
-                M := M + 1;
-                S[M] := I;
-                L[M] := W[I]
-            END
+            (* START NEW LINE *)
+            M := M + 1;
+            S[M] := I;
+            L[M] := W[I]
         END
     END
+END
 ```
 
 ```
-    PROCEDURE DYNAMIC;
+PROCEDURE DYNAMIC;
 
-    (* COMPUTATION OF OPTIMAL COST C[1,N]
-       C[I,J], F[I,J] EXPLAINED IN TABLE 1. *)
+(* COMPUTATION OF OPTIMAL COST C[1,N]
+   C[I,J], F[I,J] EXPLAINED IN TABLE 1. *)
 
+BEGIN
+
+    (* INTIALIZE VARIABLES *)
+    FOR I := 1 TO N DO
     BEGIN
-
-        (* INTIALIZE VARIABLES *)
-        FOR I := 1 TO N DO
+        FOR J := 1 TO N DO
         BEGIN
-            FOR J := 1 TO N DO
-            BEGIN
-                F[I,J] := 0;
-                C[I,J] := 0;
-            END;
-            F[I,J] := W[I];
-            C[I,I] := 1 + 1 / W[I]
-        END
+            F[I,J] := 0;
+            C[I,J] := 0;
+        END;
+        F[I,J] := W[I];
+        C[I,I] := 1 + 1 / W[I]
+    END
 
-        (* COMPUTE UPPER DIAGONAL OF L AND C
-           IN REVERSE ROW ORDER *)
-       FOR I : N-1 DOWNTO 1 DO
+    (* COMPUTE UPPER DIAGONAL OF L AND C
+       IN REVERSE ROW ORDER *)
+   FOR I : N-1 DOWNTO 1 DO
+   BEGIN
+       FOR J := I+1 TO N DO
        BEGIN
-           FOR J := I+1 TO N DO
+
+           (* CALCULATE FORMATTED LENGTH *)
+           F[I,J] := F[I,J-1] + W[J] + 1;
+           IF F[I,J] <= D THEN
            BEGIN
 
-               (* CALCULATE FORMATTED LENGTH *)
-               F[I,J] := F[I,J-1] + W[J] + 1;
-               IF F[I,J] <= D THEN
-               BEGIN
+               (* WORDS I TO J FIT ON LINE *)
+               IF J = N THEN C[I,J] := 2
+                        ELSE C[I,J] := 1 + 1 / F[I,J]
+           END
+           ELSE
+           BEGIN
 
-                   (* WORDS I TO J FIT ON LINE *)
-                   IF J = N THEN C[I,J] := 2
-                            ELSE C[I,J] := 1 + 1 / F[I,J]
-               END
-               ELSE
+               (* WORDS I TO J HAVE TO BE SPLIT *)
+               C[I,J] := C[I,I] * C[I+1,J];
+               FOR K := I+1 TO J-1 DO
                BEGIN
-
-                   (* WORDS I TO J HAVE TO BE SPLIT *)
-                   C[I,J] := C[I,I] * C[I+1,J];
-                   FOR K := I+1 TO J-1 DO
-                   BEGIN
-                       T := C[I,K] * C[K+1,J];
-                       IF T< C[I,J] THEN C[I,J] := T
-                   END
+                   T := C[I,K] * C[K+1,J];
+                   IF T< C[I,J] THEN C[I,J] := T
                END
            END
        END
-    END;
+   END
+END;
 ```
 
 ```
-    PROCEDURE LINE-BREAKER;
+PROCEDURE LINE-BREAKER;
 
-    (* COMPUTATION OF OPTIMAL STARTING INDICES P[I]
-       FOR M > 2.
-       ASSUME S[I], E[I], L[I] (DEFINED IN TABLE 1)
-       HAVE BEEN COMPUTED. X,Y,Z ARE USED TO KEEP
-       TRACK OF REQUIRED LENGTHS.
-       INFINITE IS ANY NUMBER LARGER THAN MAXIMUM
-       POSSIBLE COST c[I] *)
+(* COMPUTATION OF OPTIMAL STARTING INDICES P[I]
+   FOR M > 2.
+   ASSUME S[I], E[I], L[I] (DEFINED IN TABLE 1)
+   HAVE BEEN COMPUTED. X,Y,Z ARE USED TO KEEP
+   TRACK OF REQUIRED LENGTHS.
+   INFINITE IS ANY NUMBER LARGER THAN MAXIMUM
+   POSSIBLE COST c[I] *)
 
+BEGIN
+
+    c[S[M]] := 2.0;
+
+    (* LOOP ON LINES BACKWARDS *)
+    FOR I := M-1 DOWNTO 1 DO
     BEGIN
 
-        c[S[M]] := 2.0;
+        X := L[I] - 1 - W[S[I]];
 
-        (* LOOP ON LINES BACKWARDS *)
-        FOR I := M-1 DOWNTO 1 DO
+        (* LOOP OVER I-TH SLACK *)
+        FOR J := S[I] DOWNTO E[I] DO
         BEGIN
 
-            X := L[I] - 1 - W[S[I]];
+            X := X + 1 + W[J];
+            Y := X + 1 + W[S[I+1]];
+            c[J] := INFINITE;
 
-            (* LOOP OVER I-TH SLACK *)
-            FOR J := S[I] DOWNTO E[I] DO
+            (* LOOP OVER (I+1)-THE SLACK *)
+            FOR K := S[I+1] DOWNTO E[I+1] DO
             BEGIN
-
-                X := X + 1 + W[J];
-                Y := X + 1 + W[S[I+1]];
-                c[J] := INFINITE;
-
-                (* LOOP OVER (I+1)-THE SLACK *)
-                FOR K := S[I+1] DOWNTO E[I+1] DO
+                Y := Y - 1 - W[K];
+                IF Y<= D THEN
                 BEGIN
-                    Y := Y - 1 - W[K];
-                    IF Y<= D THEN
-                    BEGIN
 
-                        (* UPDATE c[J] *)
-                        Z := (1 + 1 / Y) * c[K];
-                        IF Z < c[J] THEN
-                        BEGIN
-                            c[J] := Z;
-                            P[J] := K
-                        END
+                    (* UPDATE c[J] *)
+                    Z := (1 + 1 / Y) * c[K];
+                    IF Z < c[J] THEN
+                    BEGIN
+                        c[J] := Z;
+                        P[J] := K
                     END
                 END
             END
-        END;
-
-        (* RETRIEVE OPTIMAL STARTING INDECIES *)
-        P[M] := S[M];  J := P[1];  P[1] := 1;
-        FOR I := 2 TO M-1 DO
-        BEGIN
-            K := P[I];  P[I] := J;  J := K
         END
     END;
+
+    (* RETRIEVE OPTIMAL STARTING INDECIES *)
+    P[M] := S[M];  J := P[1];  P[1] := 1;
+    FOR I := 2 TO M-1 DO
+    BEGIN
+        K := P[I];  P[I] := J;  J := K
+    END
+END;
 ```
