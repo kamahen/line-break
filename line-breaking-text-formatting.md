@@ -92,7 +92,7 @@ hyphenations.
 ## 2. THE LINE-BY-LINE METHOD
 
 It is assumed that we have as input a paragraph consisting of a
-sequence of N>0 words. Here, a words is simply a string of non-blank
+sequence of N&gt;0 words. Here, a words is simply a string of non-blank
 characters. The number of characters in each word is given in the
 array W[I], I&le;I&le;N. The paragraph will be formatted into M lines of
 D characters each. The line breaking problem is solved by specifying
@@ -245,7 +245,7 @@ one). Let the line lengths for the first m-1 lines be x[1], x[2], ...,
 x[m-1]. The final cost is twice the product of (1+1/x[i]),
 1&le;i&le;m-1. Now, given that a+b is constant it is straightforward to
 prove that (1+1/a)(1+1/b) is minimal when a=b. In the general case when
-m>3, assume the length x[i], 1&le;i&le;m-1 are optimal and x[j] is not
+m&gt;3, assume the length x[i], 1&le;i&le;m-1 are optimal and x[j] is not
 equal to x[j+1] for some j. Then we can lower the overall cost by
 keeping the other x[i] and replacing x[j], x[j+1] by
 (x[j]+x[j+1])/2. This contradicts the fact that we had the minimum
@@ -301,11 +301,168 @@ Paragraph #2.
 
 ## 4. THE LINE BREAKER
 
+We begin this section by first proving a simple but important property
+of the line-by-line algorithm. Let F[I], 1&le;I&le;M be the indices
+for optimal starting words in a paragraph. Then, P[I]&le;S[I],
+1&le;I&le;M. (Recall that S[I] are determined by algorithm
+line-by-line.) This property is easily shown by contradiction as
+follows. Let J be the smallest index for which P[J] &gt;
+S[J]. Clearly, P[1]=S[1]=1. It is also trivial that
+P[2]&le;S[2]. This, J&gt;2. Now, words P[J-1],...,(P[J]-1) must fit on
+one line. Since P[J-1]&le;S[J-1] and P[J]&gt;S[J], it follows that
+words S[J-1],...,(P[J]-1) must fit on one line. Since P[J-1]&le;S[J-1]
+and P[J]&gt;S[J], it follows that words S[J-1],...,S[J] also fit on
+one line. This is not possible, since by the line-by-line method, word
+S[J] could not be added to the (J-1)-th line. Hence, no J exists for
+which P[J]&gt;S[J].
 
+A direct consequence of the above property is that algorithm
+line-by-line formats the paragraph into the minimum number of lines
+possible, thus satisfying part of the conditions for optimal
+formatting. Intuitively, this is to be expected from the greedy
+approach. More importantly, this means that the improvements
+obtainable by using algorithm dynamic are solely by breaking some
+lines earlier, without further changes in the actual number of
+lines. Thus, in computing C[1,N], we may seek the first optimal break
+point between words S[1] and S[2]. Another way of looking at it is
+that one should seek for the position to break off one line at a time,
+Using this approach, the computation of C[1,N] can be speeded up to
+O(N<sup>2</sup>) time. However, there are further improvements to be
+had and we shall proceed a little differently.
+
+Breaking with the set of indices S[1],...,S[M] provides latest
+breaking points for formatting in the minimum number of lines, M. Now,
+consider breaking with the earliest breaking indices, E[I], that
+result in M formatted lines. If P[I] gives the indices for an optimal
+set of break points, then P[M]=S[M] since clearly there is no gain in
+pushing any words from the (M-1)-th line to the M-th line. It is also
+clear that the optimal breaking index P[I] lies between E[I] and S[I]
+and since P[M]=S[M] one might as well choose E[M]=S[M]. The remaining
+indices E[1],...,E[M-1] are then the earliest breaking indices for
+formatting words 1 to (S[M]-1) into M-1 lines and are computed by
+performing the line-by-line algorithm in reverse, that is, scanning
+the words in reverse order and filling up the last line and then the
+last but one line and so on.
+
+Thus, the optimal set of breaking indices P[I] satisfy the condition
+E[I]&le;P[I]&le;S[I] where E[1]=P[1]=S[1]=1 and E[M]=P[M]=S[M]. We
+have therefor significantly reduced the search regions for the optimal
+starting indices P[I]. The improved computation of an optimal set of
+starting indices is given in algorithm LINE-BREAKER. It is assumed
+that the latest breaking points S[I] and associated line lengths L[I[]
+have been computed in the line-by-line fashion, and the earliest
+indices E[I] by the reverse process as explained above. The algorithm
+uses the same cost function as for DYNAMIC but computes only a small
+number of matrix entries. The order of computation is C[J,N],
+J=E[M-1]...S[M-1], then C[J,N], J=E[M-2]...S[M-2] and so on until
+C[1,N]. Since the second index is always the same (only elements from
+the last column are computed) only the second index J is used, giving
+the cost c[J]=C[J,N]. Note that in computing the cost c[J] the search
+is done for the next breaking index (breaking off one line at a time)
+which is known to lie in the range E[I+1]...S[I+1]. Note further that
+it has also been arranged to compute the length function only where
+necessary.
+
+The correctness of algorithm line-breaker can be surmised from the
+preceding discussion. The algorithm clearly uses O(N) space
+principally for the required linear arrays.
+
+Define the slack in the I-th line to be T[I]=S[I]-E[I]. In the
+LINE-BREAKER algorithm, the loop on I is performed for M-1 iterations
+and within this loop, the loop on J is performed for T[I] iterations
+and within the latter there is yet another loop on K which is
+performed for T[I+1] operations. These loop operations thus require
+I(T[1]T[2] + T[2]T[3] + ... + T[M-1]T[M]) time. One may use as a very
+loose upper bound the maximum slack, v, and bound the above expression
+with Mv<sup>2</sup>. Since the computation of latest and earliest
+breaking indices and the initial line lengths, L[I], as well as the
+final recovery of the optimal set of breaking indices are each linear
+in N, we obtain a total running time of O(N+M(V<sup>2</sup>)).
+
+It should be stressed that the search for optimal breaking has thus
+been reduced to searching among those words which can possibly be
+moved from their initially assigned lines to the next one without
+increasing the number of lines, that is, the words which constitute
+the slack on the I-th line. Full advantage is taken of the work done
+by the simple line-by-line procedure. In practice, the slack per line
+is a very small number so that the algorithm is almost linear in
+behavior.
+
+```
+ALGORITHM LINE BREAKER
+
+    /fast computation of optimal breaking indices
+            P[1],P[2],...,P[M], M &gt; 2.
+    Assume S[I] - latest breaking indices
+           E[I] - earliest breaking indices, and
+           L[I] - lengths of lines form the
+                  line-by-line approach
+                  have been computed.
+       INFINITE - any number larger than maximum
+                  possible of c[I]./
+(0) /initialize/
+    I <- M - 1, o[S[M]] <- 2
+(1) /loop on lines, backwards/
+    X <- L[I] - 1 - W[S[I]]
+    J <- S[I]
+(2) /loop over I-th slack/
+    X <- X + 1 + W[J], Y <- X + 1 + W[S[I+1]]
+    c[J] <- INFINITE
+    K <- S[I+1]
+(3) /loop over (I+1)-the slack/
+    Y <- Y - 1 - W[K],  if Y > D then goto (5)
+    Z <- (1 + 1/Y) * c[K]
+    if Z >= c[J] then goto (5)
+(4) /update c[j]/
+    c[J] <- z, P[J] <- K
+(5) /end loop over (I+1)-the slack/
+    K <- K - 1, if < >= E[I+1] then goto (3)
+(6) /end loop on lines/
+    J <- J - 1,  if J >= E[I] then goto (2)
+(7) /end loop on lines/
+    I <-I - 1,  if I > 0 then goto (1)
+(8) /retrieve optimal breaking indices/
+    J <- P[1], P[I] <- 1, P[M] <- S[M], I <- 2
+(9) /retrieve loop/
+    K <- P[I], P[I] <- J, J <- K
+    I <- I + 1,  if I < N then goto (9)
+```
 
 ## 5. EXTENSIONS
 
-## 6. EXTENSIONS
+Although this investigation was originally prompted by the need for
+improved formatting, the resulting algorithm can be extended in a
+straightforward manner to deal with the vairable itch fonts for
+typesetting. This requires redefining W[i] to be the width of word i
+rather than the number of chracters in it. SImilarly, redefine D to be
+the line width and replace "1" for space widths by the minimum allowed
+width for a space in a justified line.
+
+Algoritm LINE-BREAKER could also be extended for use with an automatic
+hyphenation process in a manner that would minimize the words
+considered for breaking. Assuming the hyphenation points, if any,
+within each word are given, one possibility would be to ignore those
+points in the initial computation of latest and earliest breaking
+indcies, and take them intoconsideration in the final stage when
+attempting to equalize the formatted lenghts of the lines. This
+approach will not always produce the absolute minimum number of lines
+but as a trade-off fewer words will be considered for breaking.
+
+## 6. CONCLUSIONS
+
+Three algorithms for the line breaking problem have been discussed in
+this paper. The line-by-line method is simple but often produces
+undesirable results. The dynamic programming approach generally
+results in costly computations. By combining features of both methods,
+a new hybrid algorithm, LINE-BREAKER, is produced, which gurantees
+optimal results for the type of printing environments under
+sconsideration, uses much less space than dynamic programming and is
+almost as fast as the basic line-by-line processing. LIne-breaker is
+sufficiently fast for regular use when text is to be justified.
+
+These algorithms have so far been tested on a stand alone basis. It is
+expected that the LINE-BREAKER approach will be incoroporated int
+future text formatting systems.
 
 ## ACKNOWLEDGMENTS
 
