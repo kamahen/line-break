@@ -491,10 +491,10 @@ proof-reading several versions of the paper.
 
 [^6]: J. Sachs,<br/> Economical Typesetting from Small Computer Text
     Files, Proc of the Third SYmposium on Small COmputers, sponsored
-    by ACM SIGSMALL & SIGPC, Sept 1980, Pal ALto, California,
+    by ACM SIGSMALL & SIGPC, Sept 1980, Pal Alto, California,
     pp184-188.
 
-[^7]: J. Pearkins,<br/> FMT Reference Manual, University of ALberta
+[^7]: J. Pearkins,<br/> FMT Reference Manual, University of Alberta
     Computing Service,s April 1976.
 
 [^8]: TXTFORM - A Text Formatter,<br/> Dept of Computer Science, Purdue
@@ -635,7 +635,7 @@ BEGIN
         END
     END;
 
-    (* RETRIEVE OPTIMAL STARTING INDECIES *)
+    (* RETRIEVE OPTIMAL STARTING INDICES *)
     P[M] := S[M];  J := P[1];  P[1] := 1;
     FOR I := 2 TO M-1 DO
     BEGIN
