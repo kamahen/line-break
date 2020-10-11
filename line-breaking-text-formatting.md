@@ -109,7 +109,7 @@ in table 1.)
 <tr><td style="text-align:right">L[I]  </td><td> length of I-th formatted line before distribution of surplus spaces.</td></tr>
 <tr><td style="text-align:right">E[I]  </td><td> index of first word, line I, for earliest breaking</td></tr>
 <tr><td style="text-align:right">F[I,J]</td><td> formatted length from I-th to J-th word</td></tr>
-<tr><td style="text-align:right">C[I,J]</td><td> cost function, dynamic programming</td></tr>
+<tr><td style="text-align:right">C[I,J]</td><td> cost function, dynamic programming (fromI-th to J-th word)</td></tr>
 <tr><td style="text-align:right">c[I]  </td><td> cost function, line-breaker, = C[I,N]</td></tr>
 </table>
 
@@ -198,7 +198,7 @@ fact that when a sequence of words has to be broken into two or more
 lines it should be broken in such a way that the lines are equally
 used up or very nearly so. The idea is to eliminate extreme variations
 in the amount of surplus space to be distributed among the lines. In
-other words, justified text will loo9k better if the unjustified
+other words, justified text will look better if the unjustified
 version has minimum raggedness.
 
 A second important idea to keep in mind is that if a sequence of words
@@ -230,7 +230,7 @@ contributes a fact of 1+1/F[I,J] to the cost of the paragraph. When a
 split has to be made, however, the break point is chosen from all
 possible candidates so as to minimize the overall cost.
 
-The discussion following presentation of the line-by-line algorithm
+The discussion following presentation of the LINE-BY-LINE algorithm
 suggests the following definition of optimally formatted text which we
 shall adopt. A paragraph W[1]...W[N] is optimally formatted if it is
 broken into the fewest number of lines and the surplus spaces on each
@@ -302,10 +302,10 @@ Paragraph #2.
 ## 4. THE LINE BREAKER
 
 We begin this section by first proving a simple but important property
-of the line-by-line algorithm. Let F[I], 1&le;I&le;M be the indices
+of the line-by-line algorithm. Let P[I], 1&le;I&le;M be the indices
 for optimal starting words in a paragraph. Then, P[I]&le;S[I],
 1&le;I&le;M. (Recall that S[I] are determined by algorithm
-line-by-line.) This property is easily shown by contradiction as
+LINE-BY-LINE.) This property is easily shown by contradiction as
 follows. Let J be the smallest index for which P[J] &gt;
 S[J]. Clearly, P[1]=S[1]=1. It is also trivial that
 P[2]&le;S[2]. This, J&gt;2. Now, words P[J-1],...,(P[J]-1) must fit on
@@ -317,11 +317,11 @@ S[J] could not be added to the (J-1)-th line. Hence, no J exists for
 which P[J]&gt;S[J].
 
 A direct consequence of the above property is that algorithm
-line-by-line formats the paragraph into the minimum number of lines
+LINE-BY-LINE formats the paragraph into the minimum number of lines
 possible, thus satisfying part of the conditions for optimal
 formatting. Intuitively, this is to be expected from the greedy
 approach. More importantly, this means that the improvements
-obtainable by using algorithm dynamic are solely by breaking some
+obtainable by using algorithm DYNAMIC are solely by breaking some
 lines earlier, without further changes in the actual number of
 lines. Thus, in computing C[1,N], we may seek the first optimal break
 point between words S[1] and S[2]. Another way of looking at it is
@@ -340,7 +340,7 @@ clear that the optimal breaking index P[I] lies between E[I] and S[I]
 and since P[M]=S[M] one might as well choose E[M]=S[M]. The remaining
 indices E[1],...,E[M-1] are then the earliest breaking indices for
 formatting words 1 to (S[M]-1) into M-1 lines and are computed by
-performing the line-by-line algorithm in reverse, that is, scanning
+performing the LINE-BY-LINE algorithm in reverse, that is, scanning
 the words in reverse order and filling up the last line and then the
 last but one line and so on.
 
@@ -363,7 +363,7 @@ which is known to lie in the range E[I+1]...S[I+1]. Note further that
 it has also been arranged to compute the length function only where
 necessary.
 
-The correctness of algorithm line-breaker can be surmised from the
+The correctness of algorithm LINE-BREAKER can be surmised from the
 preceding discussion. The algorithm clearly uses O(N) space
 principally for the required linear arrays.
 

@@ -138,6 +138,10 @@ class LineBreak:
                             C[(I,J)] = T
         self.C = C
 
+        # retrieve optimal starting indices
+        # (this is not in the published code)
+        self.P = {1: 1}
+
 
     def LINE_BREAKER(self):
         """computes: index of optimal first word in I-th line
@@ -149,6 +153,7 @@ class LineBreak:
         Assume S[I], E[I], L[I] (defined in table 1)
         have been computed. X,Y,Z are used to keep
         track of required lengths.
+        (c[I] is cost function = C[I,N] (N = # words in paragraph)
         INFINITE is any number larger than maximum
         possible cost c[I]
         """
@@ -281,13 +286,15 @@ if __name__ == "__main__":
     print(lines_of_words(l_b.E, l_b.W, text_words))
     print('==========')
 
-    if False:
+    if True:
         l_b.DYNAMIC()
         print('========== C')
         C_i_max = max(i for i,_ in l_b.C.keys())
         C_j_max = max(j for _,j in l_b.C.keys())
         for i in from_to(1, C_i_max):
-            print([l_b.C[(i,j)] for j in from_to(1, C_j_max)])
+            assert all(l_b.C[i,j] == 0.0 for j in from_to(1, i - 1))
+            print(i, [(j,l_b.C[(i,j)]) for j in from_to(i, C_j_max)])
+            # print(i, l_b.C[(i,l_b.N)])
         print('==========')
 
     l_b.LINE_BREAKER()
