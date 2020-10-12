@@ -18,7 +18,6 @@ import sys
 # INFINITE is any number larger than maximum
 INFINITE = sys.float_info.max
 
-
 assert sys.version_info >= (3, 7)
 
 
@@ -48,7 +47,6 @@ class LineBreak:
         # self.M, self.S, self.L, self.E, self.P defined in
         # LINE_BY_LINE, LINE_BREAKER, LINE_BY_LINE_reversed
 
-
     def LINE_BY_LINE(self):
         """computes S[I]: index of first word in I-th line
 
@@ -72,14 +70,14 @@ class LineBreak:
                 self.S[self.M] = I
                 self.L[self.M] = self.W[I]
 
-        assert all(self.D >= len(' '.join(_line_words(self.S, self.W, self.text_words, i)))
-                       for i in self.S.keys())
-
+        assert all(self.D >= len(' '.join(
+            _line_words(self.S, self.W, self.text_words, i)))
+                   for i in self.S.keys())
 
     def LINE_BY_LINE_reversed(self):
         """computes E[I]: index of first word in I-th line, earliest breaking.
 
-        Assumes LINE_BY_LINE has been run
+        Assumes LINE_BY_LINE has been run.
         """
 
         # This is essentially LINE_BY_LINE, done backwards, and not recording
@@ -100,7 +98,6 @@ class LineBreak:
         assert all(self.D >= len(' '.join(_line_words(self.E, self.W, self.text_words, i)))
                        for i in self.E.keys())
         assert all(self.E[i] <= self.S[i] for i in self.S.keys())
-
 
     def DYNAMIC(self):
         """computation of optimal cost C[1,N]
@@ -164,7 +161,6 @@ class LineBreak:
 
         self.S_dyn = {i: s for i, s in enumerate(find_splits(1, self.N), 1)}
 
-
     def LINE_BREAKER(self):
         """computes: index of optimal first word in I-th line
 
@@ -227,7 +223,8 @@ def lines_of_words(S, W, text_words):
     each line is a list of words.
     """
 
-    assert sorted(S.keys()) == list(range(1, 1+max(S.keys()))), [sorted(S.keys()), list(range(1, 1+max(S.keys())))]
+    assert sorted(S.keys()) == list(range(1, 1+max(S.keys()))), [
+        sorted(S.keys()), list(range(1, 1+max(S.keys())))]
     return [_line_words(S, W, text_words, i) for i in sorted(S.keys())]
 
 
@@ -294,8 +291,9 @@ if __name__ == "__main__":
     l_b.LINE_BY_LINE_reversed()
     S_words = lines_of_words(l_b.S, l_b.W, text_words)
     print('==========')
-    print('\n'.join(distribute_spaces(line, SAMPLE_D, i % 2 == 0)
-                    for i, line in enumerate(S_words)))
+    print('\n'.join(
+        distribute_spaces(line, SAMPLE_D, i % 2 == 0)
+        for i, line in enumerate(S_words)))
     # print('W:', l_b.W)
     # print('words:', {i: (l_b.W[i], l_b.text_words[i-1]) for i in l_b.W.keys()})
     print('S:', l_b.S)
