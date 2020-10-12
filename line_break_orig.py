@@ -15,6 +15,9 @@ ordering of a dict iterator being the same as collections.OrderedDict.
 
 import sys
 
+# INFINITE is any number larger than maximum
+INFINITE = sys.float_info.max
+
 
 assert sys.version_info >= (3, 7)
 
@@ -103,18 +106,22 @@ class LineBreak:
         """computation of optimal cost C[1,N]
         C[I,J], F[I,J] explained in table 1.
 
-        assumes LINE_BY_LINE has been called.
+        Assumes LINE_BY_LINE has been called.
+
+        The splits dict and computation of S_dyn are in addition to
+        the paper's code.
         """
 
         F = {}
         C = {}
+        splits = {}
         # initialize variables
         for I in from_to(1, self.N):
             for J in from_to(1, self.N):
                 F[(I,J)] = 0
                 C[(I,J)] = 0.0
-            F[(I,J)] = self.W[I]
-            C[(I,I)] = 1 + 1 / self.W[I]
+            F[(I,I)] = self.W[I]
+            C[(I,I)] = 1.0 + 1.0 / self.W[I]
 
         # compute upper diagonal of L and C
         # in reverse row order
@@ -127,20 +134,35 @@ class LineBreak:
                     # words I to J fit on line
                     if J == self.N:
                         C[(I,J)] = 2.0
+                        # splits[(I,J)] = None
                     else:
-                        C[(I,J)] = 1 + 1 / F[(I,J)]
+                        C[(I,J)] = 1.0 + 1.0 / F[(I,J)]
+                        # splits[(I,J)] = None
                 else:
                     # words I to J have to be split
                     C[(I,J)] = C[(I,I)] * C[(I+1,J)]
+                    splits[(I,J)] = I + 1
                     for K in from_to(I + 1, J - 1):
+                        #  c[(I,J)] = min(C[(I,J)], C[(I,K)] * C[(K+1,J)])
                         T = C[(I,K)] * C[(K+1,J)]
                         if T < C[(I,J)]:
                             C[(I,J)] = T
+                            splits[(I,J)] = K
         self.C = C
 
         # retrieve optimal starting indices
         # (this is not in the published code)
-        self.P = {1: 1}
+
+        def find_splits(I, J):
+            assert I <= J and I >= 1 and J <= self.N
+            s = splits[(I,J)] if (I,J) in splits else None
+            if s:
+                yield from find_splits(I, s)
+                yield from find_splits(s + 1, J)
+            else:
+                yield I
+
+        self.S_dyn = {i: s for i, s in enumerate(find_splits(1, self.N), 1)}
 
 
     def LINE_BREAKER(self):
@@ -154,14 +176,12 @@ class LineBreak:
         have been computed. X,Y,Z are used to keep
         track of required lengths.
         (c[I] is cost function = C[I,N] (N = # words in paragraph)
-        INFINITE is any number larger than maximum
         possible cost c[I]
         """
 
         print('++', self.M, self.S)
         c = {self.S[self.M]: 2.0}
         self.P = {}
-        INFINITE = sys.float_info.max
 
         # loop on lines backwards
         for I in from_downto(self.M - 1, 1):
@@ -276,8 +296,8 @@ if __name__ == "__main__":
     print('==========')
     print('\n'.join(distribute_spaces(line, SAMPLE_D, i % 2 == 0)
                     for i, line in enumerate(S_words)))
-    print('W:', l_b.W)
-    print('words:', {i: (l_b.W[i], l_b.text_words[i-1]) for i in l_b.W.keys()})
+    # print('W:', l_b.W)
+    # print('words:', {i: (l_b.W[i], l_b.text_words[i-1]) for i in l_b.W.keys()})
     print('S:', l_b.S)
     print('E:', l_b.E)
     print('========== S')
@@ -286,16 +306,11 @@ if __name__ == "__main__":
     print(lines_of_words(l_b.E, l_b.W, text_words))
     print('==========')
 
-    if True:
-        l_b.DYNAMIC()
-        print('========== C')
-        C_i_max = max(i for i,_ in l_b.C.keys())
-        C_j_max = max(j for _,j in l_b.C.keys())
-        for i in from_to(1, C_i_max):
-            assert all(l_b.C[i,j] == 0.0 for j in from_to(1, i - 1))
-            print(i, [(j,l_b.C[(i,j)]) for j in from_to(i, C_j_max)])
-            # print(i, l_b.C[(i,l_b.N)])
-        print('==========')
+    l_b.DYNAMIC()
+    print('DYNAMIC:', l_b.S_dyn)
+    print('========== DYNAMIC')
+    print(lines_of_words(l_b.S_dyn, l_b.W, text_words))
+    print('==========')
 
     l_b.LINE_BREAKER()
     print('P:', l_b.P)

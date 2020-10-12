@@ -401,7 +401,7 @@ ALGORITHM LINE BREAKER
        INFINITE - any number larger than maximum
                   possible of c[I]./
 (0) /initialize/
-    I <- M - 1, o[S[M]] <- 2
+    I <- M - 1, c[S[M]] <- 2
 (1) /loop on lines, backwards/
     X <- L[I] - 1 - W[S[I]]
     J <- S[I]
@@ -422,7 +422,7 @@ ALGORITHM LINE BREAKER
 (7) /end loop on lines/
     I <-I - 1,  if I > 0 then goto (1)
 (8) /retrieve optimal breaking indices/
-    J <- P[1], P[I] <- 1, P[M] <- S[M], I <- 2
+    J <- P[1], P[1] <- 1, P[M] <- S[M], I <- 2
 (9) /retrieve loop/
     K <- P[I], P[I] <- J, J <- K
     I <- I + 1,  if I < N then goto (9)
