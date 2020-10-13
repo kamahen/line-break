@@ -109,7 +109,7 @@ in table 1.)
 <tr><td style="text-align:right">L[I]  </td><td> length of I-th formatted line before distribution of surplus spaces.</td></tr>
 <tr><td style="text-align:right">E[I]  </td><td> index of first word, line I, for earliest breaking</td></tr>
 <tr><td style="text-align:right">F[I,J]</td><td> formatted length from I-th to J-th word</td></tr>
-<tr><td style="text-align:right">C[I,J]</td><td> cost function, dynamic programming (fromI-th to J-th word)</td></tr>
+<tr><td style="text-align:right">C[I,J]</td><td> cost function, dynamic programming (from I-th to J-th word)</td></tr>
 <tr><td style="text-align:right">c[I]  </td><td> cost function, line-breaker, = C[I,N]</td></tr>
 </table>
 
@@ -372,7 +372,7 @@ LINE-BREAKER algorithm, the loop on I is performed for M-1 iterations
 and within this loop, the loop on J is performed for T[I] iterations
 and within the latter there is yet another loop on K which is
 performed for T[I+1] operations. These loop operations thus require
-I(T[1]T[2] + T[2]T[3] + ... + T[M-1]T[M]) time. One may use as a very
+O(T[1]T[2] + T[2]T[3] + ... + T[M-1]T[M]) time. One may use as a very
 loose upper bound the maximum slack, v, and bound the above expression
 with Mv<sup>2</sup>. Since the computation of latest and earliest
 breaking indices and the initial line lengths, L[I], as well as the

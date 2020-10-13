@@ -22,12 +22,12 @@ assert sys.version_info >= (3, 7)
 
 
 def from_to(from_i, to_i):
-    assert from_i <= to_i
+    assert from_i <= to_i, ['from_to', from_i, to_i]
     return range(from_i, to_i + 1)
 
 
 def from_downto(from_i, downto_i):
-    assert from_i >= downto_i
+    assert from_i >= downto_i, ['from_downto', from_i, downto_i]
     return range(from_i, downto_i - 1, -1)
 
 
@@ -102,8 +102,8 @@ class LineBreak:
         assert all(self.E[i] <= self.S[i] for i in self.S.keys())
 
     def DYNAMIC(self):
-        """computation of optimal cost C[1,N]
-        C[I,J], F[I,J] explained in table 1.
+        """computation of optimal cost C[(1,N)]
+        C[(I,J)], F[(I,J)] explained in table 1.
 
         Assumes LINE_BY_LINE has been called.
 
@@ -163,6 +163,19 @@ class LineBreak:
 
         self.S_dyn = dict(enumerate(optimal_splits(1, self.N), 1))
 
+        # A different way of extracting the split points.
+        # Assumes that E has been computed
+        self.S_dyn2 = {1: 1, self.M: self.S[self.M]}
+        for I in from_downto(self.M-1, 2):
+            min_C = INFINITE
+            # print('dyn2:', I, {i: (self.text_words[i-1], C[(i,self.N)]) for i in from_to(self.E[I], self.S[I])})
+            for J in from_to(self.E[I], self.S[I]):
+                # Only the "otherwise" case of C[(I,J)] calculation applies
+                new_C = 1.0 + C[(1,J)] * C[(J+1,self.N)]
+                if new_C < min_C:  # and F[(J,self.S_dyn2[I+1]-1)] <= self.D:
+                    min_C = new_C
+                    self.S_dyn2[I] = J + 1
+
     def LINE_BREAKER(self):
         """computes: index of optimal first word in I-th line
 
@@ -173,18 +186,19 @@ class LineBreak:
         Assume S[I], E[I], L[I] (defined in table 1)
         have been computed. X,Y,Z are used to keep
         track of required lengths.
-        (c[I] is cost function = C[I,N] (N = # words in paragraph)
+        (c[I] is cost function = C[(I,N] (N = # words in paragraph)
         possible cost c[I]
         """
 
         c = {self.S[self.M]: 2.0}
-        print('++', {'M':self.M, 'S':self.S, 'c':c})
+        # c = {J: 2.0 for J in from_to(1, self.N)}  # <==== TODO: is this correct?
+        # print('++', {'M':self.M, 'S':self.S, 'c':c})
         self.P = {}
 
         # loop on lines backwards
         for I in from_downto(self.M - 1, 1):
             X = self.L[I] - 1 - self.W[self.S[I]]
-            print({'I':I, 'X':X, 'L[I]':self.L[I], 'W[S[I]]':self.W[self.S[I]], 'S[I]':self.S[I], 'E[I]':self.E[I]})
+            # print({'I':I, 'X':X, 'L[I]':self.L[I], 'W[S[I]]':self.W[self.S[I]], 'S[I]':self.S[I], 'E[I]':self.E[I]})
 
             # loop over I-th slack
             assert self.S[I] >= self.E[I]
@@ -195,27 +209,27 @@ class LineBreak:
 
                 # loop over (I+1)-th slack
                 assert self.S[I+1] >= self.E[I+1]
-                print(' ', {'J':J, 'X':X, 'Y':Y, 'c':c, 'S[I+1]':self.S[I+1], 'E[I+1]':self.E[I+1]})
+                # print(' ', {'J':J, 'X':X, 'Y':Y, 'c':c, 'S[I+1]':self.S[I+1], 'E[I+1]':self.E[I+1]})
                 for K in from_downto(self.S[I+1], self.E[I+1]):
                     Y = Y - 1 - self.W[K]
-                    print('   ', {'K':K, 'Y':Y, 'Y<=D':Y <= self.D, 'c':c, 'P':self.P})
+                    # print('   ', {'K':K, 'Y':Y, 'Y<=D':Y <= self.D, 'c':c, 'P':self.P})
                     if Y <= self.D:
                         # update c[J]
                         Z = (1.0 + 1.0 / Y) * c[K]
                         if Z < c[J]:
                             c[J] = Z
-                            self.P[J] = K  # <=== TODO "J" is clearly wrong. I?
+                            self.P[I] = K  # <=== TODO: "J" is clearly wrong. Should it be I?
 
         # retrieve optimal starting indices
+        print('P(1):', dict(sorted(self.P.items())))
         self.P[self.M] = self.S[self.M]
-        print({'P(1)':self.P})
         J = self.P[1]
         self.P[1] = 1
         for I in from_to(2, self.M - 1):
             K = self.P[I]
             self.P[I] = J
             J = K
-        print({'P(2)':self.P})
+        print('P(2):', dict(sorted(self.P.items())))
 
 
 def lines_of_words(S, W, text_words):
@@ -300,8 +314,8 @@ if __name__ == "__main__":
         for i, line in enumerate(S_words)))
     # print('W:', l_b.W)
     print('words:', {i: (l_b.W[i], l_b.text_words[i-1]) for i in l_b.W.keys()})
-    print('S:', l_b.S)
-    print('E:', l_b.E)
+    print('S:', dict(sorted(l_b.S.items())))
+    print('E:', dict(sorted(l_b.E.items())))
     print('========== S')
     print(lines_of_words(l_b.S, l_b.W, text_words))
     print('========== E')
@@ -309,11 +323,13 @@ if __name__ == "__main__":
     print('==========')
 
     l_b.DYNAMIC()
-    print('DYNAMIC:', l_b.S_dyn)
-    # print('C[*,N]:', {i:(l_b.text_words[i-1], l_b.C[i,l_b.N]) for i in from_to(1, l_b.N)})
+    print('DYNAMIC:', dict(sorted(l_b.S_dyn.items())))
+    print('        ', dict(sorted(l_b.S_dyn2.items())))
+    # print('C[(*,N]:', {i:(l_b.text_words[i-1], l_b.C[(i,l_b.N]) for i in from_to(1, l_b.N)})
     print('========== DYNAMIC')
     print(lines_of_words(l_b.S_dyn, l_b.W, text_words))
+    print(lines_of_words(l_b.S_dyn2, l_b.W, text_words))
     print('==========')
 
     l_b.LINE_BREAKER()
-    print('P:', l_b.P)
+    print('P:', dict(sorted(l_b.P.items())))
