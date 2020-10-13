@@ -25,6 +25,7 @@ It has its own Copyright notice.
 ## The code
 
 The various algorithms in the paper have been translated into Python
-in file [line_break_orig.py](line_break_orig.py). The code is not
-idiomatic Python, but has tried to stay as close as possible to the
-original algorithm.
+in file [line_break_from_paper.py](line_break_from_paper.py). The code
+is not idiomatic Python, but has tried to stay as close as possible to
+the original algorithm. A few changes have been made, as given in
+the [notes](NOTES.md).
