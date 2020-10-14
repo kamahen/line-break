@@ -52,5 +52,16 @@ def distribute_spaces(words, D, left_to_right):
     return ' '.join(padded_words)
 
 
+def split_paragraphs(text):
+    """Split text into a list of paragraphs. Assumes Unix-style lines."""
 
-
+    para = []
+    for line in text.split('\n'):
+        if line == '':
+            if para:
+                yield '\n'.join(para)
+            para = []
+        else:
+            para.append(line)
+    if para:
+        yield '\n'.join(para)
