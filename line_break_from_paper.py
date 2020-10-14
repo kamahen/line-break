@@ -14,6 +14,7 @@ ordering of a dict iterator being the same as collections.OrderedDict.
 """
 
 import sys
+import line_adjust
 
 # INFINITE is any number larger than maximum
 INFINITE = sys.float_info.max
@@ -73,7 +74,7 @@ class LineBreak:
                 self.L[self.M] = self.W[I]
 
         assert all(self.D >= len(' '.join(
-            _line_words(self.S, self.W, self.text_words, i)))
+            line_adjust.line_words(self.S, self.W, self.text_words, i)))
                    for i in self.S.keys())
 
     def LINE_BY_LINE_reversed(self):
@@ -97,7 +98,7 @@ class LineBreak:
                 curr_M -= 1
 
         assert set(self.E.keys()) == set(self.S.keys())
-        assert all(self.D >= len(' '.join(_line_words(self.E, self.W, self.text_words, i)))
+        assert all(self.D >= len(' '.join(line_adjust.line_words(self.E, self.W, self.text_words, i)))
                        for i in self.E.keys())
         assert all(self.E[i] <= self.S[i] for i in self.S.keys())
 
@@ -232,58 +233,6 @@ class LineBreak:
         print('P(2):', dict(sorted(self.P.items())))
 
 
-def lines_of_words(S, W, text_words):
-    """Convert index of first words to list of lines
-
-    This function is not in the original paper; it has been added here
-    to handle the output nicely. It takes the "S" that's computed by a
-    line breaking algorithm and converts it to a list of lines, where
-    each line is a list of words.
-    """
-
-    assert sorted(S.keys()) == list(range(1, 1+max(S.keys()))), [
-        sorted(S.keys()), list(range(1, 1+max(S.keys())))]
-    return [_line_words(S, W, text_words, i) for i in sorted(S.keys())]
-
-
-def _line_words(S, W, text_words, i):
-    """Return list of words line (S[I]: index of first word in i-th line)."""
-
-    j = i + 1
-    w_i = (range(S[i], S[j]) if j in S else
-           range(S[i], max(W.keys()) + 1))
-    return [text_words[k-1] for k in w_i]
-
-
-def distribute_spaces(words, D, left_to_right):
-    """words: list of words in line
-    left_to_right: which direction to add blanks
-    Returns: list of lines with blanks inserted
-    """
-
-    if len(words) <= 1:
-        return ' '.join(words)
-
-    # TODO: make this more functional
-    to_distribute = D - len(' '.join(words))
-
-    if left_to_right:
-        i_range = lambda: range(0, len(words) - 1)
-        pad_word = lambda w: w + ' '
-    else:
-        i_range = lambda: range(len(words) - 1, 0, -1)
-        pad_word = lambda w: ' ' + w
-
-    padded_words = words
-    while to_distribute > 0:
-        for i in i_range():
-            padded_words[i] = pad_word(padded_words[i])
-            to_distribute -= 1
-            if to_distribute <= 0:
-                break
-    return ' '.join(padded_words)
-
-
 # The sample text:
 
 SAMPLE_TEXT = """
@@ -307,19 +256,19 @@ if __name__ == "__main__":
 
     l_b.LINE_BY_LINE()
     l_b.LINE_BY_LINE_reversed()
-    S_words = lines_of_words(l_b.S, l_b.W, text_words)
+    S_words = line_adjust.lines_of_words(l_b.S, l_b.W, text_words)
     print('==========')
     print('\n'.join(
-        distribute_spaces(line, SAMPLE_D, i % 2 == 0)
+        line_adjust.distribute_spaces(line, SAMPLE_D, i % 2 == 0)
         for i, line in enumerate(S_words)))
     # print('W:', l_b.W)
     print('words:', {i: (l_b.W[i], l_b.text_words[i-1]) for i in l_b.W.keys()})
     print('S:', dict(sorted(l_b.S.items())))
     print('E:', dict(sorted(l_b.E.items())))
     print('========== S')
-    print(lines_of_words(l_b.S, l_b.W, text_words))
+    print(line_adjust.lines_of_words(l_b.S, l_b.W, text_words))
     print('========== E')
-    print(lines_of_words(l_b.E, l_b.W, text_words))
+    print(line_adjust.lines_of_words(l_b.E, l_b.W, text_words))
     print('==========')
 
     l_b.DYNAMIC()
@@ -327,8 +276,8 @@ if __name__ == "__main__":
     print('        ', dict(sorted(l_b.S_dyn2.items())))
     # print('C[(*,N]:', {i:(l_b.text_words[i-1], l_b.C[(i,l_b.N]) for i in from_to(1, l_b.N)})
     print('========== DYNAMIC')
-    print(lines_of_words(l_b.S_dyn, l_b.W, text_words))
-    print(lines_of_words(l_b.S_dyn2, l_b.W, text_words))
+    print(line_adjust.lines_of_words(l_b.S_dyn, l_b.W, text_words))
+    print(line_adjust.lines_of_words(l_b.S_dyn2, l_b.W, text_words))
     print('==========')
 
     l_b.LINE_BREAKER()
