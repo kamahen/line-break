@@ -44,12 +44,12 @@ to be contrasted with printing on output devices with arbitrary
 character positions, such as graphic terminals and typesetting
 equipment. The former is usually referred to as text formatting while
 the term typesetting is applied to the latter type. Typesetting is the
-main concern of systems such as [3](#3) [4](#4) [5](#5) [6](#6). While this unquestionably
+main concern of systems such as [<sup>3</sup>](#3) [<sup>4</sup>](#4) [<sup>5</sup>](#5) [<sup>6</sup>](#6). While this unquestionably
 yields documents of professional quality, the equipment required is
 nevertheless unavailable to the majority of potential users. Thus, any
 features which aim at improving the quality of text-formatting are most
 welcome. A useful feature, often supplied by designers of text
-formatting software, for example [7](#7) [8](#8) [9](#9), is the ability to align or
+formatting software, for example [<sup>7</sup>](#7) [<sup>8</sup>](#8) [<sup>9</sup>](#9), is the ability to align or
 justify the formatted text with both left and right margins. Text
 alignment poses two main problems. First, the determination of the
 break points for separating the words of a paragraph into lines, and
@@ -145,7 +145,7 @@ appendix).
 ```
 
 The effect of algorithm LINE-BY-LINE on a short sample paragraph from
-[6](#6), formatted 47 characters to a line, is given below. The surplus
+[<sup>6</sup>](#6), formatted 47 characters to a line, is given below. The surplus
 spaces in this paragraph have been distributed according to the
 alternate left and right fashion. Note that of the seven lines in the
 paragraph, the first five have 1, 2, 6, 10, 7 surplus spaces
@@ -191,7 +191,7 @@ The improvements to the sample paragraph indicated in the preceding
 section demonstrate that line breaking as done by the line-by-line
 method does not always produce the best results. In this section, a
 dynamic programming solution for optimal line breaking is
-presented. This idea is not new. Knuth [5](#5) indicates that he uses
+presented. This idea is not new. Knuth [<sup>5</sup>](#5) indicates that he uses
 such an approach for line breaking in his typesetting system.
 
 The key to the improvements in the preceding section arise from the
@@ -219,7 +219,7 @@ Second, the following cost function is suggested for minimization
 <table>
 <tr><td rowspan=3>C[I,J] =</td><td>2</td>        <td>if F[I,J] &le; D & J = N</td></tr>
 <tr><td>1+1/F[I,J]</td>                          <td>if F[I,J] &le; D & J &lt; N</td></tr>
-<tr><TD>1+min(C[I,K] * C[K+1,J], I &le; K &lt; J) [N1](#N1)</td><td>otherwise</td></tr>
+<tr><TD>1+min(C[I,K] * C[K+1,J], I &le; K &lt; J) [<sup>N1</sup>](#N1)</td><td>otherwise</td></tr>
 </table>
 
 The cost function, C[I,J], will be the cost of formatting words I to
@@ -258,7 +258,7 @@ both subsequences W[I]...W[K] and W[K+1]...W[J] must be optimally
 formatted this time taking into consideration the last line of any
 subsequence which is not the last line of the paragraph. The
 computation of optimum cost C[1,N] is given by algorithm DYNAMIC. It
-is similar to many dynamic programming algorithms, [1](#1) [2](#2) for
+is similar to many dynamic programming algorithms, [<sup>1</sup>](#1) [<sup>2</sup>](#2) for
 example, and the modifications required to keep track of the breaking
 indices is a straightforward exercise.
 
