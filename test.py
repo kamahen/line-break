@@ -32,12 +32,9 @@ with a 2nd line
 """
 PARAS_EXPECTED = ['A line\nAnother line', 'Start new para', 'Another para\nwith a 2nd line']
 
-if __name__ == "__main__":
-    assert list(line_adjust.split_paragraphs(PARAS)) == PARAS_EXPECTED
 
-
+def test_sample_text():
     text_words = SAMPLE_TEXT.split()
-
     l_b = line_break_from_paper.LineBreak(text_words, SAMPLE_D)
 
     l_b.LINE_BY_LINE()
@@ -48,23 +45,51 @@ if __name__ == "__main__":
         line_adjust.distribute_spaces(line, SAMPLE_D, i % 2 == 0)
         for i, line in enumerate(S_words)))
     # print('W:', l_b.W)
-    print('words:', {i: (l_b.W[i], l_b.text_words[i-1]) for i in l_b.W.keys()})
-    print('S:', dict(sorted(l_b.S.items())))
-    print('E:', dict(sorted(l_b.E.items())))
+    print('words:', {i: (l_b.W[i], l_b.text_words[i-1]) for i in sorted(l_b.W.keys())})
+    print('S:', dd(l_b.S))
+    print('E:', dd(l_b.E))
     print('========== S')
-    print(line_adjust.lines_of_words(l_b.S, l_b.W, text_words))
+    print(line_adjust.lines_of_words(l_b.S, l_b.W, l_b.text_words))
     print('========== E')
-    print(line_adjust.lines_of_words(l_b.E, l_b.W, text_words))
+    print(line_adjust.lines_of_words(l_b.E, l_b.W, l_b.text_words))
     print('==========')
 
     l_b.DYNAMIC()
-    print('DYNAMIC:', dict(sorted(l_b.S_dyn.items())))
-    print('        ', dict(sorted(l_b.S_dyn2.items())))
+    print('DYNAMIC:', dd(l_b.S_dyn))
     # print('C[(*,N]:', {i:(l_b.text_words[i-1], l_b.C[(i,l_b.N]) for i in from_to(1, l_b.N)})
     print('========== DYNAMIC')
-    print(line_adjust.lines_of_words(l_b.S_dyn, l_b.W, text_words))
-    print(line_adjust.lines_of_words(l_b.S_dyn2, l_b.W, text_words))
+    print(line_adjust.lines_of_words(l_b.S_dyn, l_b.W, l_b.text_words))
     print('==========')
 
+
+if __name__ == "__main__":
+    assert list(line_adjust.split_paragraphs(PARAS)) == PARAS_EXPECTED
+
+    if False: test_sample_text()
+
+    with open('line-breaking-text-formatting.md') as paper_file:
+        paper_paras = list(line_adjust.split_paragraphs(paper_file.read()))
+
+    for para in paper_paras:
+        para_words = para.split()
+        one_line_words = ' '.join(para_words)
+        print(one_line_words, flush=True)
+        for format_width in range(1, len(one_line_words) + 1):
+            print(' ', format_width, end='', flush=True)
+            # print('***', 'width:', format_width, list(enumerate(para_words, 1))) # DO NOT SUBMIT
+            para_b = line_break_from_paper.LineBreak(para_words, format_width)
+            para_b.LINE_BY_LINE()
+            para_b.LINE_BY_LINE_reversed()
+            para_b.DYNAMIC()
+            # para_b.LINE_BREAKER()
+        print()
+
+    # The following is placed here because it crashes:
     l_b.LINE_BREAKER()
-    print('P:', dict(sorted(l_b.P.items())))
+    print('P:', dd(l_b.P))
+
+
+# For debugging output of dicts:
+
+def dd(d):
+    return dict(sorted(d.items()))

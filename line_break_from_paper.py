@@ -23,12 +23,10 @@ assert sys.version_info >= (3, 7)
 
 
 def from_to(from_i, to_i):
-    assert from_i <= to_i, ['from_to', from_i, to_i]
     return range(from_i, to_i + 1)
 
 
 def from_downto(from_i, downto_i):
-    assert from_i >= downto_i, ['from_downto', from_i, downto_i]
     return range(from_i, downto_i - 1, -1)
 
 
@@ -73,10 +71,6 @@ class LineBreak:
                 self.S[self.M] = I
                 self.L[self.M] = self.W[I]
 
-        assert all(self.D >= len(' '.join(
-            line_adjust.line_words(self.S, self.W, self.text_words, i)))
-                   for i in self.S.keys())
-
     def LINE_BY_LINE_reversed(self):
         """computes E[I]: index of first word in I-th line, earliest breaking.
 
@@ -98,8 +92,6 @@ class LineBreak:
                 curr_M -= 1
 
         assert set(self.E.keys()) == set(self.S.keys())
-        assert all(self.D >= len(' '.join(line_adjust.line_words(self.E, self.W, self.text_words, i)))
-                       for i in self.E.keys())
         assert all(self.E[i] <= self.S[i] for i in self.S.keys())
 
     def DYNAMIC(self):
@@ -108,13 +100,20 @@ class LineBreak:
 
         Assumes LINE_BY_LINE has been called.
 
-        The splits dict and computation of S_dyn are in addition to
-        the paper's code.
+        The computation of S_dyn is in addition to the paper's code.
         """
+
+        if len(' '.join(self.text_words)) <= self.D or len(self.text_words) <= 1:
+            # TODO: do we need this short-circuit? There are 2 cases:
+            # a piece of text that's only a single line or that consists
+            # of a single long word.
+            self.C = {}  # This is probably incorrect
+            self.S_dyn = {1:1}
+            # self.S_dyn2 = {1:1}  # DO NOT SUBMIT - not needed
+            return
 
         F = {}
         C = {}
-        splits = {}
         # initialize variables
         for I in from_to(1, self.N):
             for J in from_to(1, self.N):
@@ -134,48 +133,54 @@ class LineBreak:
                     # words I to J fit on line
                     if J == self.N:
                         C[(I,J)] = 2.0
-                        # splits[(I,J)] = None
                     else:
                         C[(I,J)] = 1.0 + 1.0 / F[(I,J)]
-                        # splits[(I,J)] = None
                 else:
                     # words I to J have to be split
                     C[(I,J)] = C[(I,I)] * C[(I+1,J)]
-                    splits[(I,J)] = I + 1
                     for K in from_to(I + 1, J - 1):
-                        #  c[(I,J)] = min(C[(I,J)], C[(I,K)] * C[(K+1,J)])
+                        # TODO: replace following 3 lines by: C[(I,J)] = min(C[(I,J)], C[(I,K)] * C[(K+1,J)])
                         T = C[(I,K)] * C[(K+1,J)]
                         if T < C[(I,J)]:
                             C[(I,J)] = T
-                            splits[(I,J)] = K
         self.C = C
 
         # retrieve optimal starting indices
         # (this is not in the published code)
+        # For each line I, find an optimal split point K, defined as
+        # minimizing the cost function: 1 + C[1,K] * C[K+1,N] if
+        # number of characters in the line <= D
 
-        def optimal_splits(I, J):
-            assert I <= J and I >= 1 and J <= self.N
-            split = splits[(I,J)] if (I,J) in splits else None
-            if split:
-                yield from optimal_splits(I, split)
-                yield from optimal_splits(split + 1, J)
-            else:
-                yield I
+        self.S_dyn = {1:1, self.M:self.S[self.M]}
+        for I in from_to(2, self.M-1):
+            # print('*S_dyn*', I, 'D:', self.D, self.S_dyn)
+            line_len = self.W[self.S[I]]
+            C_min = C[(1,self.S[I-1])] * C[(self.S[I-1]+1,self.N)]
+            self.S_dyn[I] = self.S[I-1]+1
+            for K in from_to(self.S[I-1]+1, self.N-1):
+                line_len += 1 + self.W[K]
+                if line_len > self.D:
+                    break
+                c = C[(1,K)] * C[(K+1,self.N)]
+                # print('    *S_dyn*', K, 'len:',line_len, 'C_min:',C_min, 'c:',c, (c<C_min), 'S_dyn:',self.S_dyn[I])
+                if c < C_min:
+                    C_min = c
+                    self.S_dyn[I] = K+1
 
-        self.S_dyn = dict(enumerate(optimal_splits(1, self.N), 1))
-
-        # A different way of extracting the split points.
-        # Assumes that E has been computed
-        self.S_dyn2 = {1: 1, self.M: self.S[self.M]}
-        for I in from_downto(self.M-1, 2):
-            min_C = INFINITE
-            # print('dyn2:', I, {i: (self.text_words[i-1], C[(i,self.N)]) for i in from_to(self.E[I], self.S[I])})
-            for J in from_to(self.E[I], self.S[I]):
-                # Only the "otherwise" case of C[(I,J)] calculation applies
-                new_C = 1.0 + C[(1,J)] * C[(J+1,self.N)]
-                if new_C < min_C:  # and F[(J,self.S_dyn2[I+1]-1)] <= self.D:
-                    min_C = new_C
-                    self.S_dyn2[I] = J + 1
+        # TODO: remove this - it's wrong
+        # # A different way of extracting the split points.
+        # # Assumes that E has been computed
+        # self.S_dyn2 = {1: 1, self.M: self.S[self.M]}
+        # for I in from_downto(self.M-1, 2):
+        #     C_min = INFINITE
+        #     # print('dyn2:', I, {i: (self.text_words[i-1], C[(i,self.N)]) for i in from_to(self.E[I], self.S[I])})
+        #     for J in from_to(self.E[I], self.S[I]):
+        #         # Only the "otherwise" case of C[(I,J)] calculation applies
+        #         C_new = 1.0 + C[(1,J)] * C[(J+1,self.N)]
+        #         if C_new < C_min:
+        #             C_min = C_new
+        #             self.S_dyn2[I] = J + 1
+        # assert sorted(self.S_dyn.keys()) == sorted(self.S.keys()), {'S':dd(self.S), 'S_dyn':dd(self.S_dyn), 'S_dyn2':dd(self.S_dyn2), 'E':dd(self.E), 'splits':dd(splits), 'words':self.text_words}
 
     def LINE_BREAKER(self):
         """computes: index of optimal first word in I-th line
@@ -222,7 +227,7 @@ class LineBreak:
                             self.P[I] = K  # <=== TODO: "J" is clearly wrong. Should it be I?
 
         # retrieve optimal starting indices
-        print('P(1):', dict(sorted(self.P.items())))
+        # print('P(1):', dd(self.P))
         self.P[self.M] = self.S[self.M]
         J = self.P[1]
         self.P[1] = 1
@@ -230,6 +235,10 @@ class LineBreak:
             K = self.P[I]
             self.P[I] = J
             J = K
-        print('P(2):', dict(sorted(self.P.items())))
+        # print('P(2):', dd(self.P))
 
 
+# For debugging output of dicts:
+
+def dd(d):
+    return dict(sorted(d.items()))
