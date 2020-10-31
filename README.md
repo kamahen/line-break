@@ -19,6 +19,8 @@ and is available in
 It has been
 [transcribed to Markdown](line-breaking-text-formatting.md) with a few
 minor typos fixed and some slight changers to layout.
+In a few places, I've added an editorial comment where the original
+text appears to have a mistake that's more than a typo.
 
 It has its own Copyright notice.
 
