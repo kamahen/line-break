@@ -44,12 +44,12 @@ to be contrasted with printing on output devices with arbitrary
 character positions, such as graphic terminals and typesetting
 equipment. The former is usually referred to as text formatting while
 the term typesetting is applied to the latter type. Typesetting is the
-main concern of systems such as [^3][^4][^5][^6]. While this unquestionably
+main concern of systems such as [3](#3) [4](#4) [5](#5) [6](#6). While this unquestionably
 yields documents of professional quality, the equipment required is
 nevertheless unavailable to the majority of potential users. Thus, any
 features which aim at improving the quality of text-formatting are most
 welcome. A useful feature, often supplied by designers of text
-formatting software, for example [^7][^8][^9], is the ability to align or
+formatting software, for example [7](#7) [8](#8) [9](#9), is the ability to align or
 justify the formatted text with both left and right margins. Text
 alignment poses two main problems. First, the determination of the
 break points for separating the words of a paragraph into lines, and
@@ -103,14 +103,15 @@ in table 1.)
 <table>
 <caption>Table 1: Major variables referenced by the algorithm</caption>
 <tr><td style="text-align:right">N     </td><td>number of words in paragraph</td></tr>
-<tr><td style="text-align:right">M     </td><td> number of formatted lines</td></tr>
-<tr><td style="text-align:right">W[I]  </td><td> maximum number of characters per line</td></tr>
-<tr><td style="text-align:right">S[I]  </td><td> index of first word in I-th line, that is I-th line starts with W[S[I]].</td></tr>
-<tr><td style="text-align:right">L[I]  </td><td> length of I-th formatted line before distribution of surplus spaces.</td></tr>
-<tr><td style="text-align:right">E[I]  </td><td> index of first word, line I, for earliest breaking</td></tr>
-<tr><td style="text-align:right">F[I,J]</td><td> formatted length from I-th to J-th word</td></tr>
-<tr><td style="text-align:right">C[I,J]</td><td> cost function, dynamic programming (from I-th to J-th word)</td></tr>
-<tr><td style="text-align:right">c[I]  </td><td> cost function, line-breaker, = C[I,N]</td></tr>
+<tr><td style="text-align:right">M     </td><td>number of formatted lines</td></tr>
+<tr><td style="text-align:right">D     </td><td>maximum number of characters per line</td></tr>
+<tr><td style="text-align:right">W[I]  </td><td>number of characters in the I-th word</td></tr>
+<tr><td style="text-align:right">S[I]  </td><td>index of first word in I-th line, that is I-th line starts with W[S[I]].</td></tr>
+<tr><td style="text-align:right">L[I]  </td><td>length of I-th formatted line before distribution of surplus spaces.</td></tr>
+<tr><td style="text-align:right">E[I]  </td><td>index of first word, line I, for earliest breaking</td></tr>
+<tr><td style="text-align:right">F[I,J]</td><td>formatted length from I-th to J-th word</td></tr>
+<tr><td style="text-align:right">C[I,J]</td><td>cost function, dynamic programming (from I-th to J-th word)</td></tr>
+<tr><td style="text-align:right">c[I]  </td><td>cost function, line-breaker, = C[I,N]</td></tr>
 </table>
 
 The line-by-line method is the one that immediately comes to mind and
@@ -144,7 +145,7 @@ appendix).
 ```
 
 The effect of algorithm LINE-BY-LINE on a short sample paragraph from
-[^6], formatted 47 characters to a line, is given below. The surplus
+[6](#6), formatted 47 characters to a line, is given below. The surplus
 spaces in this paragraph have been distributed according to the
 alternate left and right fashion. Note that of the seven lines in the
 paragraph, the first five have 1, 2, 6, 10, 7 surplus spaces
@@ -190,7 +191,7 @@ The improvements to the sample paragraph indicated in the preceding
 section demonstrate that line breaking as done by the line-by-line
 method does not always produce the best results. In this section, a
 dynamic programming solution for optimal line breaking is
-presented. This idea is not new. Knuth [^5] indicates that he uses
+presented. This idea is not new. Knuth [5](#5) indicates that he uses
 such an approach for line breaking in his typesetting system.
 
 The key to the improvements in the preceding section arise from the
@@ -218,7 +219,7 @@ Second, the following cost function is suggested for minimization
 <table>
 <tr><td rowspan=3>C[I,J] =</td><td>2</td>        <td>if F[I,J] &le; D & J = N</td></tr>
 <tr><td>1+1/F[I,J]</td>                          <td>if F[I,J] &le; D & J &lt; N</td></tr>
-<tr><TD>1+min(C[I,K] * C[K+1,J], I &le; K &lt; J)</td><td>otherwise</td></tr>
+<tr><TD>1+min(C[I,K] * C[K+1,J], I &le; K &lt; J) [N1](#N1)</td><td>otherwise</td></tr>
 </table>
 
 The cost function, C[I,J], will be the cost of formatting words I to
@@ -257,7 +258,7 @@ both subsequences W[I]...W[K] and W[K+1]...W[J] must be optimally
 formatted this time taking into consideration the last line of any
 subsequence which is not the last line of the paragraph. The
 computation of optimum cost C[1,N] is given by algorithm DYNAMIC. It
-is similar to many dynamic programming algorithms, [^1][^2] for
+is similar to many dynamic programming algorithms, [1](#1) [2](#2) for
 example, and the modifications required to keep track of the breaking
 indices is a straightforward exercise.
 
@@ -472,35 +473,35 @@ proof-reading several versions of the paper.
 
 ## REFERENCES
 
-[^1]: A. V. Aho, J. E. Hopcraft & J. D. Ulman,<br/>
+<a name="1">[1]</a>: A. V. Aho, J. E. Hopcraft & J. D. Ulman,<br/>
     The Design and ANalysis of Computer Algorithms, Addison Wesley, 1974, p69.
 
-[^2]: K. Q. Brown,<br/> Dynamic Programming in Computer Science,
+<a name="2">[2]</a>: K. Q. Brown,<br/> Dynamic Programming in Computer Science,
     Tech. Rep. CMU-CS_79-106, Dept of ComputerSc., Carnegie-Mellon
     Univ., Pittsburgh Pa, 1979.
 
-[^3]: B. W. Kernighan, M. E. Lesk, J. F. Ossana,<br/> Unix Time SHaring
+<a name="3">[3]</a>: B. W. Kernighan, M. E. Lesk, J. F. Ossana,<br/> Unix Time SHaring
     System: Document Preparation, Bellw Systems Tecnical Journal
     57(6), July-Aug 198, pp 2115-2134.
 
-[^4]: B. W. Kernighan, L. L. Cherry,<br/>
+<a name="4">[4]</a>: B. W. Kernighan, L. L. Cherry,<br/>
     A System for Typesetting Mathematics, CACM 18, March 1975, pp151-157.
 
-[^5]: D. E. Knuth,<br/> TAU EPSILON CHI, A System for Technical Text,
+<a name="5">[5]</a>: D. E. Knuth,<br/> TAU EPSILON CHI, A System for Technical Text,
     American Mathematical Society, Providence, Rhode Island, 1979
 
-[^6]: J. Sachs,<br/> Economical Typesetting from Small Computer Text
+<a name="6">[6]</a>: J. Sachs,<br/> Economical Typesetting from Small Computer Text
     Files, Proc of the Third SYmposium on Small COmputers, sponsored
     by ACM SIGSMALL & SIGPC, Sept 1980, Pal Alto, California,
     pp184-188.
 
-[^7]: J. Pearkins,<br/> FMT Reference Manual, University of Alberta
+<a name="7">[7]</a>: J. Pearkins,<br/> FMT Reference Manual, University of Alberta
     Computing Service,s April 1976.
 
-[^8]: TXTFORM - A Text Formatter,<br/> Dept of Computer Science, Purdue
+<a name="8">[8]</a>: TXTFORM - A Text Formatter,<br/> Dept of Computer Science, Purdue
     University, West Lafayette, Ind., 1979.
 
-[^9]: DOC Processor Bulletin, Academic Computing Services, Michigan
+<a name="9">[9]</a>: DOC Processor Bulletin, Academic Computing Services, Michigan
     Technological University, Houghton, MI.
 
 ## APPENDIX
@@ -643,3 +644,7 @@ BEGIN
     END
 END;
 ```
+
+## NOTES added during transcription
+
+<a name="N1">[N1]</a>: The definition for F[I,J] &gt; D seems to be min(C[I,K] * C[K+1,J], I &le; K &lt; J) in the code.
