@@ -1,6 +1,9 @@
 """Break/join/adjust lines based on spacing."""
 
 
+import textwrap
+
+
 def lines_of_words(S, W, text_words):
     """Convert index of first words to list of lines
 
@@ -65,3 +68,9 @@ def split_paragraphs(text):
             para.append(line)
     if para:
         yield '\n'.join(para)
+
+
+
+def text_to_list_of_lines(text):
+    """Convert text into a list of lines, each being a list of words."""
+    return [line.split() for line in textwrap.dedent(text.strip()).split('\n')]

@@ -3,6 +3,8 @@
 
 import line_break_from_paper
 import line_adjust
+import sys
+import textwrap
 
 
 # The sample text from the paper:
@@ -13,6 +15,16 @@ SAMPLE_TEXT = """
   ranging   from  handbills  to  heavy  reference
   books.   Despite   the   mushroom   growth   of
   electronic   media,   print  remains  the  most
+  versatile and most widely used medium for  mass
+  communication.
+"""
+
+SAMPLE_EXPECTED_TEST = """
+  We  live  in  a  print-oriented  society. Every
+  day  we  produce  a  huge  volume  of   printed
+  material,   ranging  from  handbills to   heavy
+  reference books. Despite  the  mushroom  growth
+  of  electronic  media,  print  remains the most
   versatile and most widely used medium for  mass
   communication.
 """
@@ -58,14 +70,21 @@ def test_sample_text():
     print('DYNAMIC:', dd(l_b.S_dyn))
     # print('C[(*,N]:', {i:(l_b.text_words[i-1], l_b.C[(i,l_b.N]) for i in from_to(1, l_b.N)})
     print('========== DYNAMIC')
-    print(line_adjust.lines_of_words(l_b.S_dyn, l_b.W, l_b.text_words))
+    l_b_words = line_adjust.lines_of_words(l_b.S_dyn, l_b.W, l_b.text_words)
+    print(l_b_words)
+    expected_words = line_adjust.text_to_list_of_lines(SAMPLE_EXPECTED_TEST)
+    assert expected_words == l_b_words, dict(expected=expected_words, l_b=lb_words)
     print('==========')
 
 
-if __name__ == "__main__":
-    assert list(line_adjust.split_paragraphs(PARAS)) == PARAS_EXPECTED
+# For debugging output of dicts:
 
-    if False: test_sample_text()
+def dd(d):
+    return dict(sorted(d.items()))
+
+
+def main_test():
+    assert list(line_adjust.split_paragraphs(PARAS)) == PARAS_EXPECTED
 
     with open('line-breaking-text-formatting.md') as paper_file:
         paper_paras = list(line_adjust.split_paragraphs(paper_file.read()))
@@ -89,7 +108,7 @@ if __name__ == "__main__":
     print('P:', dd(l_b.P))
 
 
-# For debugging output of dicts:
+if __name__ == "__main__":
+    if False: test_sample_text(); sys.exit(1)
 
-def dd(d):
-    return dict(sorted(d.items()))
+    main_test()

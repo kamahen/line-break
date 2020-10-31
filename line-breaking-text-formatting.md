@@ -219,7 +219,7 @@ Second, the following cost function is suggested for minimization
 <table>
 <tr><td rowspan=3>C[I,J] =</td><td>2</td>        <td>if F[I,J] &le; D & J = N</td></tr>
 <tr><td>1+1/F[I,J]</td>                          <td>if F[I,J] &le; D & J &lt; N</td></tr>
-<tr><TD>1+min(C[I,K] * C[K+1,J], I &le; K &lt; J) [<sup>N1</sup>](#N1)</td><td>otherwise</td></tr>
+<tr><TD>1+min(C[I,K] * C[K+1,J], I &le; K &lt; J) <a href="#N1"><sup>N1</sup></a></td><td>otherwise</td></tr>
 </table>
 
 The cost function, C[I,J], will be the cost of formatting words I to
