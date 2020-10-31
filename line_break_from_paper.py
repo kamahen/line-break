@@ -109,7 +109,6 @@ class LineBreak:
             # of a single long word.
             self.C = {}  # This is probably incorrect
             self.S_dyn = {1:1}
-            # self.S_dyn2 = {1:1}  # DO NOT SUBMIT - not needed
             return
 
         F = {}
@@ -166,21 +165,6 @@ class LineBreak:
                 if c < C_min:
                     C_min = c
                     self.S_dyn[I] = K+1
-
-        # TODO: remove this - it's wrong
-        # # A different way of extracting the split points.
-        # # Assumes that E has been computed
-        # self.S_dyn2 = {1: 1, self.M: self.S[self.M]}
-        # for I in from_downto(self.M-1, 2):
-        #     C_min = INFINITE
-        #     # print('dyn2:', I, {i: (self.text_words[i-1], C[(i,self.N)]) for i in from_to(self.E[I], self.S[I])})
-        #     for J in from_to(self.E[I], self.S[I]):
-        #         # Only the "otherwise" case of C[(I,J)] calculation applies
-        #         C_new = 1.0 + C[(1,J)] * C[(J+1,self.N)]
-        #         if C_new < C_min:
-        #             C_min = C_new
-        #             self.S_dyn2[I] = J + 1
-        # assert sorted(self.S_dyn.keys()) == sorted(self.S.keys()), {'S':dd(self.S), 'S_dyn':dd(self.S_dyn), 'S_dyn2':dd(self.S_dyn2), 'E':dd(self.E), 'splits':dd(splits), 'words':self.text_words}
 
     def LINE_BREAKER(self):
         """computes: index of optimal first word in I-th line
