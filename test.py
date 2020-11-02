@@ -1,15 +1,14 @@
 """Test line_break_from_paper."""
 
 
+import sys
 import line_break_from_paper
 import line_adjust
-import sys
-import textwrap
 
 
 # The sample text from the paper:
 
-SAMPLE_TEXT = """
+PAPER_TEXT = """
   We  live in a print-oriented society. Every day
   we produce a huge volume of  printed  material,
   ranging   from  handbills  to  heavy  reference
@@ -19,7 +18,7 @@ SAMPLE_TEXT = """
   communication.
 """
 
-SAMPLE_EXPECTED_TEST = """
+PAPER_EXPECTED_TEXT = """
   We  live  in  a  print-oriented  society. Every
   day  we  produce  a  huge  volume  of   printed
   material,   ranging  from  handbills to   heavy
@@ -30,7 +29,7 @@ SAMPLE_EXPECTED_TEST = """
 """
 
 # D: maximum number of characters per line
-SAMPLE_D = 47
+PAPER_D = 47
 
 
 PARAS = """
@@ -42,19 +41,20 @@ Start new para
 Another para
 with a 2nd line
 """
-PARAS_EXPECTED = ['A line\nAnother line', 'Start new para', 'Another para\nwith a 2nd line']
+
+PARAS_SPLIT_EXPECTED = ['A line\nAnother line', 'Start new para', 'Another para\nwith a 2nd line']
 
 
-def test_sample_text():
-    text_words = SAMPLE_TEXT.split()
-    l_b = line_break_from_paper.LineBreak(text_words, SAMPLE_D)
+def test_sample_text(sample_text, sample_expected_text, sample_d):
+    text_words = sample_text.split()
+    l_b = line_break_from_paper.LineBreak(text_words, sample_d)
 
     l_b.LINE_BY_LINE()
     l_b.LINE_BY_LINE_reversed()
     S_words = line_adjust.lines_of_words(l_b.S, l_b.W, text_words)
     print('==========')
     print('\n'.join(
-        line_adjust.distribute_spaces(line, SAMPLE_D, i % 2 == 0)
+        line_adjust.distribute_spaces(line, sample_d, i % 2 == 0)
         for i, line in enumerate(S_words)))
     # print('W:', l_b.W)
     print('words:', {i: (l_b.W[i], l_b.text_words[i-1]) for i in sorted(l_b.W.keys())})
@@ -67,14 +67,17 @@ def test_sample_text():
     print('==========')
 
     l_b.DYNAMIC()
-    print('DYNAMIC:', dd(l_b.S_dyn))
+    print('DYNAMIC:', len(l_b.S_dyn), dd(l_b.S_dyn))
     # print('C[(*,N]:', {i:(l_b.text_words[i-1], l_b.C[(i,l_b.N]) for i in from_to(1, l_b.N)})
     print('========== DYNAMIC')
     l_b_words = line_adjust.lines_of_words(l_b.S_dyn, l_b.W, l_b.text_words)
     print(l_b_words)
-    expected_words = line_adjust.text_to_list_of_lines(SAMPLE_EXPECTED_TEST)
-    assert expected_words == l_b_words, dict(expected=expected_words, l_b=lb_words)
+    expected_words = line_adjust.text_to_list_of_lines(sample_expected_text)
+    assert expected_words == l_b_words, dict(expected=expected_words, l_b=l_b_words)
     print('==========')
+
+    l_b.LINE_BREAKER()
+    print('P:', len(l_b.P), dd(l_b.P))
 
 
 # For debugging output of dicts:
@@ -84,7 +87,7 @@ def dd(d):
 
 
 def main_test():
-    assert list(line_adjust.split_paragraphs(PARAS)) == PARAS_EXPECTED
+    assert list(line_adjust.split_paragraphs(PARAS)) == PARAS_SPLIT_EXPECTED
 
     with open('line-breaking-text-formatting.md') as paper_file:
         paper_paras = list(line_adjust.split_paragraphs(paper_file.read()))
@@ -100,15 +103,16 @@ def main_test():
             para_b.LINE_BY_LINE()
             para_b.LINE_BY_LINE_reversed()
             para_b.DYNAMIC()
-            # para_b.LINE_BREAKER()
+            para_b.LINE_BREAKER()
+            if para_b.S_dyn != para_b.P:
+                print()
+                assert para_b.S_dyn == para_b.P, dict(width=format_width, S_dyn=dd(para_b.S_dyn), P=dd(para_b.P), para=[(i,w) for i,w in enumerate(para_words,1)])
         print()
-
-    # The following is placed here because it crashes:
-    l_b.LINE_BREAKER()
-    print('P:', dd(l_b.P))
 
 
 if __name__ == "__main__":
-    if False: test_sample_text(); sys.exit(1)
+    if True:
+        test_sample_text(PAPER_TEXT, PAPER_EXPECTED_TEXT, PAPER_D)
+        # sys.exit(1)
 
     main_test()

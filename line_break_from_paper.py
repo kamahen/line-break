@@ -14,7 +14,6 @@ ordering of a dict iterator being the same as collections.OrderedDict.
 """
 
 import sys
-import line_adjust
 
 # INFINITE is any number larger than maximum
 INFINITE = sys.float_info.max
@@ -91,8 +90,8 @@ class LineBreak:
                 curr_L = self.W[I]
                 curr_M -= 1
 
-        assert set(self.E.keys()) == set(self.S.keys())
-        assert all(self.E[i] <= self.S[i] for i in self.S.keys())
+        assert set(self.E) == set(self.S)
+        assert all(self.E[i] <= self.S[i] for i in self.S)
 
     def DYNAMIC(self):
         """computation of optimal cost C[(1,N)]
@@ -182,8 +181,10 @@ class LineBreak:
 
         c = {self.S[self.M]: 2.0}
         # c = {J: 2.0 for J in from_to(1, self.N)}  # <==== TODO: is this correct?
-        # print('++', {'M':self.M, 'S':self.S, 'c':c})
+        # print('++', {'M':self.M, 'S':self.S, 'E':self.E, 'L':self.L, 'c':c})
         self.P = {}
+        assert len(self.S) == len(self.E)  # TODO: added
+        assert all(self.S[i] >= self.E[i] for i in from_to(1, len(self.S)))  # TODO: added
 
         # loop on lines backwards
         for I in from_downto(self.M - 1, 1):
@@ -191,7 +192,6 @@ class LineBreak:
             # print({'I':I, 'X':X, 'L[I]':self.L[I], 'W[S[I]]':self.W[self.S[I]], 'S[I]':self.S[I], 'E[I]':self.E[I]})
 
             # loop over I-th slack
-            assert self.S[I] >= self.E[I]
             for J in from_downto(self.S[I], self.E[I]):
                 X = X + 1 + self.W[J]
                 Y = X + 1 + self.W[self.S[I+1]]
@@ -203,12 +203,12 @@ class LineBreak:
                 for K in from_downto(self.S[I+1], self.E[I+1]):
                     Y = Y - 1 - self.W[K]
                     # print('   ', {'K':K, 'Y':Y, 'Y<=D':Y <= self.D, 'c':c, 'P':self.P})
-                    if Y <= self.D:
+                    if Y <= self.D and K in c:  # TODO: added "if K in c"
                         # update c[J]
                         Z = (1.0 + 1.0 / Y) * c[K]
                         if Z < c[J]:
                             c[J] = Z
-                            self.P[I] = K  # <=== TODO: "J" is clearly wrong. Should it be I?
+                            self.P[I] = K  # <=== TODO: "P[J]" in the original is clearly wrong.
 
         # retrieve optimal starting indices
         # print('P(1):', dd(self.P))
@@ -220,6 +220,7 @@ class LineBreak:
             self.P[I] = J
             J = K
         # print('P(2):', dd(self.P))
+        # print('S_dyn:', dd(self.S_dyn))
 
 
 # For debugging output of dicts:

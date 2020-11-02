@@ -458,7 +458,7 @@ results in costly computations. By combining features of both methods,
 a new hybrid algorithm, LINE-BREAKER, is produced, which gurantees
 optimal results for the type of printing environments under
 sconsideration, uses much less space than dynamic programming and is
-almost as fast as the basic line-by-line processing. LIne-breaker is
+almost as fast as the basic line-by-line processing. LINE-BREAKER is
 sufficiently fast for regular use when text is to be justified.
 
 These algorithms have so far been tested on a stand alone basis. It is
@@ -617,7 +617,7 @@ BEGIN
             Y := X + 1 + W[S[I+1]];
             c[J] := INFINITE;
 
-            (* LOOP OVER (I+1)-THE SLACK *)
+            (* LOOP OVER (I+1)-TH SLACK *)
             FOR K := S[I+1] DOWNTO E[I+1] DO
             BEGIN
                 Y := Y - 1 - W[K];
