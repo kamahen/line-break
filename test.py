@@ -75,9 +75,14 @@ def test_sample_text(sample_text, sample_expected_text, sample_d):
     expected_words = line_adjust.text_to_list_of_lines(sample_expected_text)
     assert expected_words == l_b_words, dict(expected=expected_words, l_b=l_b_words)
     print('==========')
+    print('\n'.join(
+        line_adjust.distribute_spaces(line, sample_d, i % 2 == 0)
+        for i, line in enumerate(line_adjust.lines_of_words(l_b.S_dyn, l_b.W, text_words))))
+    print('=========-')
 
     l_b.LINE_BREAKER()
     print('P:', len(l_b.P), dd(l_b.P))
+    assert l_b.P == l_b.S_dyn, dict(width=sample_d, S_dyn=dd(l_b.S_dyn), P=dd(l_b.P), para=[(i,w) for i,w in enumerate(text_words,1)])
 
 
 # For debugging output of dicts:

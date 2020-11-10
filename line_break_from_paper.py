@@ -13,7 +13,11 @@ The code requires Python 3.7 or later, to take advantage of the
 ordering of a dict iterator being the same as collections.OrderedDict.
 """
 
+# pylint: disable=invalid-name,fixme,line-too-long,bad-whitespace,too-many-instance-attributes,missing-function-docstring
+
+from itertools import accumulate, chain, takewhile
 import sys
+from typing import Dict, List, Tuple
 
 # INFINITE is any number larger than maximum
 INFINITE = sys.float_info.max
@@ -32,20 +36,34 @@ def from_downto(from_i, downto_i):
 class LineBreak:
     """Global environment for the algorithms."""
 
+    # Dict's simulate 1-origin arrays
+
+    text_words: List[str]           # list of words in paragraph (0-index)
+    D: int                          # max number of chars per line
+    N: int                          # number of words in paragraph
+    W: Dict[int,int]                # number of chars in I-th word
+
+    # Other attributes (not defined in __init__ but crated by
+    # LINE_BY_LINE, LINE_BY_LINE_reversed, LINE_BREAKER), to make
+    # pylint be quiet:
+    M: int                          # number of formatted lines
+    L: Dict[int,int]                # length of I-th formatted line
+    E: Dict[int,int]                # index of first word, line I, earliest breaking
+    C: Dict[Tuple[int,int], float]  # cost function (from I-th to J-th word)
+    S: Dict[int,int]                # index of first word in I-th line from LINE_BY_LINE
+    S_dyn: Dict[int,int]            # S from DYNAMIC
+    P: Dict[int,int]                # S from LINE_BREAKER
+
+
     def __init__(self, text_words, D):
 
         self.text_words = text_words
         self.D = D
-
-        # N: number of words in paragraph
         self.N = len(self.text_words)
 
-        # W: number of characters in the I-th word (1-origin)
         self.W = {i: min(len(word), D) for i, word in enumerate(self.text_words, 1)}
         assert all(w > 0 for w in self.W.values())
 
-        # self.M, self.S, self.L, self.E, self.P defined in
-        # LINE_BY_LINE, LINE_BREAKER, LINE_BY_LINE_reversed
 
     def LINE_BY_LINE(self):
         """computes S[I]: index of first word in I-th line
@@ -70,6 +88,7 @@ class LineBreak:
                 self.S[self.M] = I
                 self.L[self.M] = self.W[I]
 
+
     def LINE_BY_LINE_reversed(self):
         """computes E[I]: index of first word in I-th line, earliest breaking.
 
@@ -92,6 +111,7 @@ class LineBreak:
 
         assert set(self.E) == set(self.S)
         assert all(self.E[i] <= self.S[i] for i in self.S)
+
 
     def DYNAMIC(self):
         """computation of optimal cost C[(1,N)]
@@ -146,24 +166,25 @@ class LineBreak:
         # retrieve optimal starting indices
         # (this is not in the published code)
         # For each line I, find an optimal split point K, defined as
-        # minimizing the cost function: 1 + C[1,K] * C[K+1,N] if
+        # minimizing the cost function: C[1,K] * C[K+1,N] if
         # number of characters in the line <= D
 
-        self.S_dyn = {1:1, self.M:self.S[self.M]}
-        for I in from_to(2, self.M-1):
-            # print('*S_dyn*', I, 'D:', self.D, self.S_dyn)
-            line_len = self.W[self.S[I]]
-            C_min = C[(1,self.S[I-1])] * C[(self.S[I-1]+1,self.N)]
-            self.S_dyn[I] = self.S[I-1]+1
-            for K in from_to(self.S[I-1]+1, self.N-1):
-                line_len += 1 + self.W[K]
-                if line_len > self.D:
-                    break
-                c = C[(1,K)] * C[(K+1,self.N)]
-                # print('    *S_dyn*', K, 'len:',line_len, 'C_min:',C_min, 'c:',c, (c<C_min), 'S_dyn:',self.S_dyn[I])
-                if c < C_min:
-                    C_min = c
-                    self.S_dyn[I] = K+1
+        self.S_dyn = {1:1}
+        I = 1  # index into S_dyn
+        while True:
+            # seq of (word index, length of line to here)
+            line_lengths = accumulate(
+                from_to(self.S_dyn[I]+1, self.N),
+                lambda total, i: (i, total[1] + 1 + self.W[i]),
+                initial=(self.S_dyn[I], self.W[self.S_dyn[I]]))
+            line_lengths = list(takewhile(lambda i: i[1] <= self.D, line_lengths))  # TODO: remove list(...)
+            line_words = [k for k, _ in takewhile(lambda i: i[1] <= self.D, line_lengths)]
+            I += 1
+            if not line_words or line_words[-1] == self.N:
+                break
+            _, self.S_dyn[I] = min((C[(1,K)]*C[(K+1,self.N)], K+1)
+                                   for K in line_words)
+
 
     def LINE_BREAKER(self):
         """computes: index of optimal first word in I-th line

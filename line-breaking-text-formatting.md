@@ -164,6 +164,7 @@ Sample Paragraph # 1:
 
 
 ```
+
 We  live in a print-oriented society. Every day
 we produce a huge volume of  printed  material,
 ranging   from  handbills  to  heavy  reference
@@ -171,18 +172,21 @@ books.   Despite   the   mushroom   growth   of
 electronic   media,   print  remains  the  most
 versatile and most widely used medium for  mass
 communication.
+
 ```
 
 Sample Paragraph #2:
 
 ```
+
 We  live  in  a  print-oriented  society. Every
 day  we  produce  a  huge  volume  of   printed
-material,   ranging  from  handbills to   heavy
+material,   ranging  from  handbills  to  heavy
 reference books. Despite  the  mushroom  growth
 of  electronic  media,  print  remains the most
 versatile and most widely used medium for  mass
 communication.
+
 ```
 
 ## 3. A DYNAMIC PROGRAMMING SOLUTION
@@ -647,4 +651,4 @@ END;
 
 ## NOTES added during transcription
 
-<a name="N1">[N1]</a>: The definition for F[I,J] &gt; D seems to be min(C[I,K] * C[K+1,J], I &le; K &lt; J) in the code.
+<a name="N1">[N1]</a>: The definition for C[I,J] &gt; D seems to be min(C[I,K] * C[K+1,J], I &le; K &lt; J) in the code.
