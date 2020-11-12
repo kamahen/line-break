@@ -231,8 +231,8 @@ J. It recognizes the fact that the last line of a paragraph need to be
 (and is not normally) aligned with the right margin. This case is
 recognized by the condition J=N. It also attempts no splitting of a
 sequence of words that will fit on one line. Such a sequence simply
-contributes a fact of 1+1/F[I,J] to the cost of the paragraph. When a
-split has to be made, however, the break point is chosen from all
+contributes a factor of 1+1/F[I,J] to the cost of the paragraph. When
+a split has to be made, however, the break point is chosen from all
 possible candidates so as to minimize the overall cost.
 
 The discussion following presentation of the LINE-BY-LINE algorithm
@@ -414,13 +414,13 @@ ALGORITHM LINE BREAKER
     X <- X + 1 + W[J], Y <- X + 1 + W[S[I+1]]
     c[J] <- INFINITE
     K <- S[I+1]
-(3) /loop over (I+1)-the slack/
+(3) /loop over (I+1)-th slack/
     Y <- Y - 1 - W[K],  if Y > D then goto (5)
     Z <- (1 + 1/Y) * c[K]
     if Z >= c[J] then goto (5)
 (4) /update c[j]/
     c[J] <- z, P[J] <- K
-(5) /end loop over (I+1)-the slack/
+(5) /end loop over (I+1)-th slack/
     K <- K - 1, if < >= E[I+1] then goto (3)
 (6) /end loop on lines/
     J <- J - 1,  if J >= E[I] then goto (2)
