@@ -1,5 +1,16 @@
 # Implementation notes
 
+## Dynamic programming
+
+The paper describes the algorithm DYNAMIC but omits explaining how to
+read off the result. This presentation provides a method: [A Gentle
+Introduction to Dynamic Programming and the Viterbi
+Algorithm](http://www.cambridge.org/resources/0521882672/7934_kaeslin_dynpro_new.pdf).
+The basic idea is to label each node with the total cost to that
+point, then proceed backwards from the end state, using the lowest
+cost connected node at each step.
+
+
 ## 1-origin indexing
 
 The algorithms in the paper use 1-origin indexing and also a
@@ -15,6 +26,26 @@ None of the typos in the paper are serious, except for one in the
 LINE-BREAKER algorithm. In computing `P`, there's clearly a bug with
 `P[J] := K` because `P` is indexed by line number and `J` is a word
 index.
+
+## Cost function
+
+The cost function is defined as
+`1+1/F[I,J]` if `F[I,J]` &le; `D` & `J` &lt; `N`.
+However, if `F[I,J]` is 1 (a single letter word), then the cost is 2,
+the same as for the first condition of the cost function:
+if `F[I,J]` &le; `D` & `J` = `N`.
+
+Perhaps the cost function should be redefined as `1+0.999/F[I,J]`, so
+that the last line's cost function is always 2?
+
+## Cost function for line breaks
+
+The text defines the cost function for a line break as `1+min(C[I,K] *
+C[K+1,J], I &le; K &lt; J)` but in the code it seems to be
+`min(C[I,K] * C[K+1,J], I &le; K &lt; J) in the code -- that is, the
+constant factor `1` isn't there. I've put the `1+` into
+DYNAMIC - it doesn't make any difference for LINE_BREAKER.
+
 
 ## DYNAMIC and optimal splits
 
@@ -47,31 +78,3 @@ P[M-1] value. (P[1] and P[M] are, of course, special -- P[1] must
 always be 1 and P[M] should always be S[M] (shortest possible last
 line). But the question remains: why not just store the value in
 P[I+1] instead of P[I] (and do a fix-up at the end for P[1], P[M])?
-
-# Cost function
-
-The cost function for formatting words _i_ to _j_ is defined as
-follows (F<sub>i,j</sub> is the formatted length of words _i_ to
-_j_):
-
-* 2 if last line and words _i-j_ fit in 1 line
-* 1 + 1/F<sub>i,j</sub> if not last line and words _i-j_ fit in 1 line
-* 1 + min(C<sub>i,k</sub> * C<sub>k+1,j</sub>) otherwise
-
-The computation for C<sub>i,N</sub> in LINE-BREAKER first sets
-C<sub>N,N</sub> to 2.
-
-There is a triple loop:
-```
-for i = m-1 .. 1:
-  x = L[i] - 1 - W[S[i]]  # x: formatted length of line i without 1st word
-  for j = S[i] .. E[i] by -1:  # i-th slack
-    x = x + 1 + W[j]  # x: formatted length of line i add j-th word
-    y = x + 1 + W[S[i+1]]  y: formatted length of line i add 1st word of line i+1
-    C[j] = INFINITE
-    for k = S[i+1] .. E[i+1] by -1:  i+1-th slack
-      y = y - 1 - W[k]  # y: formatted length of line i without 1st word of line k
-      # (1 + 1 / y) is C[W[S[i]],W[S[k]]-1]
-      c[J] = min(c[J], (1 + 1 / y) * c[k])
-      # set P[...] = J if new minimum ********* <= fix: P[...] => P[i]?
-```

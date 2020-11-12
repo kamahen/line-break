@@ -15,7 +15,7 @@ ordering of a dict iterator being the same as collections.OrderedDict.
 
 # pylint: disable=invalid-name,fixme,line-too-long,bad-whitespace,too-many-instance-attributes,missing-function-docstring
 
-from itertools import accumulate, chain, takewhile
+from itertools import accumulate, takewhile
 import sys
 from typing import Dict, List, Tuple
 
@@ -51,12 +51,15 @@ class LineBreak:
     E: Dict[int,int]                # index of first word, line I, earliest breaking
     C: Dict[Tuple[int,int], float]  # cost function (from I-th to J-th word)
     S: Dict[int,int]                # index of first word in I-th line from LINE_BY_LINE
+
+    # Not in the paper:
     S_dyn: Dict[int,int]            # S from DYNAMIC
     P: Dict[int,int]                # S from LINE_BREAKER
 
 
     def __init__(self, text_words, D):
 
+        assert all(' ' not in t for t in text_words), text_words
         self.text_words = text_words
         self.D = D
         self.N = len(self.text_words)
@@ -126,7 +129,7 @@ class LineBreak:
             # TODO: do we need this short-circuit? There are 2 cases:
             # a piece of text that's only a single line or that consists
             # of a single long word.
-            self.C = {}  # This is probably incorrect
+            self.C = {}  # This is incorrect but doesn't matter
             self.S_dyn = {1:1}
             return
 
@@ -138,7 +141,7 @@ class LineBreak:
                 F[(I,J)] = 0
                 C[(I,J)] = 0.0
             F[(I,I)] = self.W[I]
-            C[(I,I)] = 1.0 + 1.0 / self.W[I]
+            C[(I,I)] = 1.0 + 1.0 / self.W[I]  # TODO: see Notes.md#Cost_function
 
         # compute upper diagonal of L and C
         # in reverse row order
@@ -152,38 +155,58 @@ class LineBreak:
                     if J == self.N:
                         C[(I,J)] = 2.0
                     else:
-                        C[(I,J)] = 1.0 + 1.0 / F[(I,J)]
+                        C[(I,J)] = 1.0 + 1.0 / F[(I,J)]  # TODO: see Notes.md#Cost_function
                 else:
                     # words I to J have to be split
-                    C[(I,J)] = C[(I,I)] * C[(I+1,J)]
+                    C[(I,J)] = 1 + C[(I,I)] * C[(I+1,J)] # TODO: the paper doesn't have the "1+"
                     for K in from_to(I + 1, J - 1):
                         # TODO: replace following 3 lines by: C[(I,J)] = min(C[(I,J)], C[(I,K)] * C[(K+1,J)])
-                        T = C[(I,K)] * C[(K+1,J)]
+                        T = 1 + C[(I,K)] * C[(K+1,J)]  # TODO: the paper doesn't have the "1 +"
                         if T < C[(I,J)]:
                             C[(I,J)] = T
         self.C = C
 
-        # retrieve optimal starting indices
-        # (this is not in the published code)
-        # For each line I, find an optimal split point K, defined as
-        # minimizing the cost function: C[1,K] * C[K+1,N] if
-        # number of characters in the line <= D
+        if False:   # DO NOT SUBMIT
+            print('~~~~~')
+            print('{:>3s}'.format(' '), end='')
+            for j in from_to(1,self.N):
+                print(' {:>8d}'.format(j), end='')
+            print()
+            for i in from_to(1,self.N):
+                print('{:>3d}'.format(i), end='')
+                for j in from_to(1,self.N):
+                    if C[(i,j)] == 0.0:
+                        print(' {:>8s}'.format(' '), end='')
+                    else:
+                        print(' {:>8.5f}'.format(C[(i,j)]), end='')
+                print()
+            print('~~~~~')
 
-        self.S_dyn = {1:1}
-        I = 1  # index into S_dyn
+        # retrieve optimal starting indices (this is not in the published code)
+        # into self.S_dyn.
+
+        # print('***C:', dd({(j,k):C[(j,k)] for j,k in C if j == 1 or k == self.N}))  # DO NOT SUBMIT
+        # print('***C:', dd({k:C[(1,k)]*C[(k+1,self.N)] for k in from_to(1,self.N-1)}))
+        # print('***C:', dd({k:C[(1,k-1)]*C[(k,self.N)] for k in from_to(2,self.N)}))
+        starts = [self.S[self.M]]
         while True:
-            # seq of (word index, length of line to here)
-            line_lengths = accumulate(
-                from_to(self.S_dyn[I]+1, self.N),
-                lambda total, i: (i, total[1] + 1 + self.W[i]),
-                initial=(self.S_dyn[I], self.W[self.S_dyn[I]]))
-            line_lengths = list(takewhile(lambda i: i[1] <= self.D, line_lengths))  # TODO: remove list(...)
-            line_words = [k for k, _ in takewhile(lambda i: i[1] <= self.D, line_lengths)]
-            I += 1
-            if not line_words or line_words[-1] == self.N:
+            # print('**starts:', starts)  # DO NOT SUBMIT
+            K = starts[0] - 1
+            if K <= 0:
                 break
-            _, self.S_dyn[I] = min((C[(1,K)]*C[(K+1,self.N)], K+1)
-                                   for K in line_words)
+            starts.insert(0, self.split_point(K))
+        self.S_dyn = dict(enumerate(starts, 1))
+
+
+    def split_point(self, end_K):
+        line_lengths = accumulate(
+            from_downto(end_K - 1, 1),
+            lambda total, i: (i, total[1] + 1 + self.W[i]),
+            initial=(end_K, self.W[end_K]))
+        line_words = list(k for k, _ in takewhile(lambda i: i[1] <= self.D, line_lengths))  # DO NOT SUBMIT: list(...)
+        _, point = min(((self.C[(1,K-1)]*self.C[(K,self.N)] if K > 1 else 0.0, K) for K in line_words),
+                       key=lambda c_k: c_k[0])
+        return point
 
 
     def LINE_BREAKER(self):
@@ -201,8 +224,8 @@ class LineBreak:
         """
 
         c = {self.S[self.M]: 2.0}
-        # c = {J: 2.0 for J in from_to(1, self.N)}  # <==== TODO: is this correct?
-        # print('++', {'M':self.M, 'S':self.S, 'E':self.E, 'L':self.L, 'c':c})
+        # c = {J: 2.0 for J in from_to(1, self.N)}  # <==== TODO: is this correct, to avoid "K in c" test below?
+        # print('++', {'M':self.M, 'S':self.S, 'E':self.E, 'L':self.L, 'c':c})  # DO NOT SUBMIT
         self.P = {}
         assert len(self.S) == len(self.E)  # TODO: added
         assert all(self.S[i] >= self.E[i] for i in from_to(1, len(self.S)))  # TODO: added
@@ -210,7 +233,7 @@ class LineBreak:
         # loop on lines backwards
         for I in from_downto(self.M - 1, 1):
             X = self.L[I] - 1 - self.W[self.S[I]]
-            # print({'I':I, 'X':X, 'L[I]':self.L[I], 'W[S[I]]':self.W[self.S[I]], 'S[I]':self.S[I], 'E[I]':self.E[I]})
+            # print({'I':I, 'X':X, 'L[I]':self.L[I], 'W[S[I]]':self.W[self.S[I]], 'S[I]':self.S[I], 'E[I]':self.E[I]})  # DO NOT SUBMIT
 
             # loop over I-th slack
             for J in from_downto(self.S[I], self.E[I]):
@@ -220,19 +243,19 @@ class LineBreak:
 
                 # loop over (I+1)-th slack
                 assert self.S[I+1] >= self.E[I+1]
-                # print(' ', {'J':J, 'X':X, 'Y':Y, 'c':c, 'S[I+1]':self.S[I+1], 'E[I+1]':self.E[I+1]})
+                # print(' ', {'J':J, 'X':X, 'Y':Y, 'c':c, 'S[I+1]':self.S[I+1], 'E[I+1]':self.E[I+1]})  # DO NOT SUBMIT
                 for K in from_downto(self.S[I+1], self.E[I+1]):
                     Y = Y - 1 - self.W[K]
-                    # print('   ', {'K':K, 'Y':Y, 'Y<=D':Y <= self.D, 'c':c, 'P':self.P})
+                    # print('   ', {'K':K, 'Y':Y, 'Y<=D':Y <= self.D, 'c':c, 'P':self.P})  # DO NOT SUBMIT
                     if Y <= self.D and K in c:  # TODO: added "if K in c"
                         # update c[J]
-                        Z = (1.0 + 1.0 / Y) * c[K]
+                        Z = (1.0 + 1.0 / Y) * c[K]  # TODO: see Notes.md#Cost_function
                         if Z < c[J]:
                             c[J] = Z
                             self.P[I] = K  # <=== TODO: "P[J]" in the original is clearly wrong.
 
         # retrieve optimal starting indices
-        # print('P(1):', dd(self.P))
+        # print('P(1):', dd(self.P))  # DO NOT SUBMIT
         self.P[self.M] = self.S[self.M]
         J = self.P[1]
         self.P[1] = 1
@@ -240,8 +263,8 @@ class LineBreak:
             K = self.P[I]
             self.P[I] = J
             J = K
-        # print('P(2):', dd(self.P))
-        # print('S_dyn:', dd(self.S_dyn))
+        # print('P(2):', dd(self.P))  # DO NOT SUBMIT
+        # print('S_dyn:', dd(self.S_dyn))  # DO NOT SUBMIT
 
 
 # For debugging output of dicts:

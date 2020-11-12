@@ -1,6 +1,8 @@
 """Break/join/adjust lines based on spacing."""
 
+# pylint: disable=invalid-name,fixme,line-too-long,bad-whitespace,too-many-instance-attributes,missing-function-docstring
 
+from itertools import chain
 import textwrap
 
 
@@ -45,7 +47,7 @@ def distribute_spaces(words, D, left_to_right):
         i_range = lambda: range(len(words) - 1, 0, -1)
         pad_word = lambda w: ' ' + w
 
-    padded_words = words
+    padded_words = words[:]
     while to_distribute > 0:
         for i in i_range():
             padded_words[i] = pad_word(padded_words[i])
@@ -70,7 +72,20 @@ def split_paragraphs(text):
         yield '\n'.join(para)
 
 
-
 def text_to_list_of_lines(text):
     """Convert text into a list of lines, each being a list of words."""
     return [line.split() for line in textwrap.dedent(text.strip()).split('\n')]
+
+
+def pad_lines_list(S_words, d):
+    """S_words is list of paragraphs, which are lists of words. d is width.
+    Returns list of adjusted lines."""
+
+    adj_words = (distribute_spaces(line, d, i % 2 == 0)
+                 for i, line in enumerate(S_words[:-1]))  # TODO: islice(S_words, 0, len(S_words)-1)))
+    return chain(adj_words, [' '.join(S_words[-1])])
+
+
+def pad_lines(S_words, d):
+    """pad_lines_list, joined with newlines."""
+    return '\n'.join(pad_lines_list(S_words, d))
