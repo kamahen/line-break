@@ -1,6 +1,6 @@
 """Break/join/adjust lines based on spacing."""
 
-# pylint: disable=invalid-name,fixme,line-too-long,bad-whitespace,too-many-instance-attributes,missing-function-docstring
+# pylint: disable=invalid-name
 
 from itertools import chain
 import textwrap
@@ -28,7 +28,7 @@ def line_words(S, W, text_words, i):
     return [text_words[k-1] for k in w_i]
 
 
-def distribute_spaces(words, D, left_to_right):
+def distribute_spaces(words, max_width, left_to_right):
     """words: list of words in line
     left_to_right: which direction to add blanks
     Returns: list of lines with blanks inserted
@@ -38,7 +38,7 @@ def distribute_spaces(words, D, left_to_right):
         return ' '.join(words)
 
     # TODO: make this more functional
-    to_distribute = D - len(' '.join(words))
+    to_distribute = max_width - len(' '.join(words))
 
     if left_to_right:
         i_range = lambda: range(0, len(words) - 1)
@@ -58,7 +58,7 @@ def distribute_spaces(words, D, left_to_right):
 
 
 def split_paragraphs(text):
-    """Split text into a list of paragraphs. Assumes Unix-style lines."""
+    """Split text into an iterator of paragraphs. Assumes Unix-style lines."""
 
     para = []
     for line in text.split('\n'):
@@ -77,15 +77,16 @@ def text_to_list_of_lines(text):
     return [line.split() for line in textwrap.dedent(text.strip()).split('\n')]
 
 
-def pad_lines_list(S_words, d):
-    """S_words is list of paragraphs, which are lists of words. d is width.
+def pad_lines_list(S_words, max_width):
+    """S_words is list of paragraphs, which are lists of words.
     Returns list of adjusted lines."""
 
-    adj_words = (distribute_spaces(line, d, i % 2 == 0)
-                 for i, line in enumerate(S_words[:-1]))  # TODO: islice(S_words, 0, len(S_words)-1)))
+    # TODO: S_words[:-1] => islice(S_words, 0, len(S_words)-1)
+    adj_words = (distribute_spaces(line, max_width, i % 2 == 0)
+                 for i, line in enumerate(S_words[:-1]))
     return chain(adj_words, [' '.join(S_words[-1])])
 
 
-def pad_lines(S_words, d):
+def pad_lines(S_words, max_width):
     """pad_lines_list, joined with newlines."""
-    return '\n'.join(pad_lines_list(S_words, d))
+    return '\n'.join(pad_lines_list(S_words, max_width))
