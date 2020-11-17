@@ -76,25 +76,39 @@ class TestSplit(unittest.TestCase):
     PAPER_MAX_LINE_WIDTH = 47
 
     def test_as_line_text_list(self):
+        self.assertEqual(as_line_text_list([]), [])
         self.assertEqual(as_line_text_list(self.lines_words), self.lines_text)
 
     def test_split_text(self):
+        self.assertEqual(split_text(''), [])
         self.assertEqual(split_text(self.text), self.words)
 
     def test_split_text_to_words(self):
+        self.assertEqual(split_text_to_words([]), [])
         self.assertEqual(split_text_to_words(self.words), self.words_Words)
 
     def test_text_to_words(self):
+        self.assertEqual(text_to_words(''), [])
+        self.assertEqual(text_to_words('', self.max_line_width), [])
         self.assertEqual(text_to_words(self.text), self.words_Words)
         self.assertEqual(text_to_words(self.text, self.max_line_width),
                          self.adjust_words_Words)
         self.assertEqual(adjust_words(self.words_Words, self.max_line_width),
                          self.adjust_words_Words)
+        self.assertEqual(adjust_words([], self.max_line_width), [])
         self.assertEqual(
             adjust_words(self.adjust_words_Words, self.max_line_width),
             self.adjust_words_Words)
 
     def test_line_by_line(self):
+        self.assertEqual(
+            as_line_text_list(
+                line_by_line(text_to_words('', self.max_line_width),
+                             self.max_line_width)), [[]])
+        self.assertEqual(
+            as_line_text_list(
+                line_by_line_reversed(text_to_words('', self.max_line_width),
+                                      self.max_line_width)), [[]])
         self.assertEqual(
             as_line_text_list(
                 line_by_line(text_to_words(self.text, self.max_line_width),
