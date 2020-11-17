@@ -67,7 +67,11 @@ def adjust_words(words: List[Word], max_width: int) -> List[Word]:
 
 
 def line_by_line(words: List[Word], max_width: int) -> List[List[Word]]:
-    """Assumes words has run through adjust_words."""
+    """Greedy algorithm for flowing text in a paragraph.
+
+    Assumes words has run through adjust_words.
+    """
+
     line: List[Word] = []
     lines: List[List[Word]] = []
     line_width = -1
@@ -75,9 +79,32 @@ def line_by_line(words: List[Word], max_width: int) -> List[List[Word]]:
         line_width += 1 + word.width
         if line_width > max_width:
             lines.append(line)
-            line_width = word.width - 1
+            line_width = word.width
             line = [word]
         else:
             line.append(word)
     lines.append(line)
+    return lines
+
+
+def line_by_line_reversed(words: List[Word],
+                          max_width: int) -> List[List[Word]]:
+    """Greedy algorithm for flowing text in a paragraph,
+    with the lines being assigned in reverse order.
+
+    Assumes words has run through adjust_words.
+    """
+
+    line: List[Word] = []
+    lines: List[List[Word]] = []
+    line_width = -1
+    for word in reversed(words):
+        line_width += 1 + word.width
+        if line_width > max_width:
+            lines.insert(0, line)
+            line_width = word.width
+            line = [word]
+        else:
+            line.insert(0, word)
+    lines.insert(0, line)
     return lines
