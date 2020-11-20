@@ -73,8 +73,9 @@ c[i] is defined as c[i,N].
 ## P in LINE-BREAKER
 
 The loop at the end confuses me ... it seems to do nothing more than
-shift the values to the right (P[2:M-1] = P[1:M-2]) and throw away the
-P[M-1] value. (P[1] and P[M] are, of course, special -- P[1] must
+shift the values to the right: `P[2:M-1] = P[1:M-2]` (The 3 lines
+inside the loop are equivalent to `P[I],J:=J,P[I]` which simplifies to
+`P[I]:=P[I-1]`).  (P[1] and P[M] are, of course, special -- P[1] must
 always be 1 and P[M] should always be S[M] (shortest possible last
-line). But the question remains: why not just store the value in
-P[I+1] instead of P[I] (and do a fix-up at the end for P[1], P[M])?
+line)). But the question remains: why not just store the value in
+P[I+1] instead of P[I] (and separately set P[1], P[M])?

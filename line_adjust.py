@@ -3,7 +3,6 @@
 # pylint: disable=invalid-name
 
 from itertools import chain
-import textwrap
 
 
 def lines_of_words(S, W, text_words):
@@ -74,7 +73,7 @@ def split_paragraphs(text):
 
 def text_to_list_of_lines(text):
     """Convert text into a list of lines, each being a list of words."""
-    return [line.split() for line in textwrap.dedent(text.strip()).split('\n')]
+    return [line.split() for line in text.strip().split('\n')]
 
 
 def pad_lines_list(S_words, max_width):
