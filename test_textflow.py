@@ -98,7 +98,8 @@ class TestSplit(unittest.TestCase):
         self.assertEqual(text_to_words('', self.max_line_width), [])
         self.assertEqual(text_to_words(self.text), self.words_Words)
         self.assertEqual(
-            text_to_words(self.text, self.max_line_width), self.adjust_words_Words
+            text_to_words(self.text, self.max_line_width),
+            self.adjust_words_Words,
         )
         self.assertEqual(
             adjust_words(self.words_Words, self.max_line_width),
@@ -112,9 +113,7 @@ class TestSplit(unittest.TestCase):
 
     def test_line_by_line(self):
         self.assertEqual(
-            line_by_line_indexes(
-                text_to_words('', self.max_line_width), self.max_line_width
-            ),
+            line_by_line_indexes(text_to_words('', self.max_line_width), self.max_line_width),
             [[]],
         )
         self.assertEqual(
@@ -189,10 +188,7 @@ class TestSplit(unittest.TestCase):
             )
         )
         self.assertTrue(
-            all(
-                len(' '.join(line)) <= self.PAPER_MAX_LINE_WIDTH
-                for line in paper_greedy_lines
-            )
+            all(len(' '.join(line)) <= self.PAPER_MAX_LINE_WIDTH for line in paper_greedy_lines)
         )
         self.assertEqual(paper_greedy_lines, paper_expected_greedy_lines)
         self.assertTrue(
@@ -207,6 +203,31 @@ class TestSplit(unittest.TestCase):
         )
 
     def test_optimal_lines(self):
+        self.assertEqual(
+            optimal_line_indexes(text_to_words('', self.max_line_width), self.max_line_width),
+            [[]],
+        )
+        self.assertEqual(
+            indexes_to_texts(
+                optimal_line_indexes,
+                text_to_words('', self.max_line_width),
+                self.max_line_width,
+            ),
+            [[]],
+        )
+        self.assertEqual(
+            optimal_line_indexes(text_to_words('12345', 5), 5),
+            [[0]],
+        )
+        self.assertEqual(
+            indexes_to_texts(
+                optimal_line_indexes,
+                text_to_words('123456', 5),
+                5,
+            ),
+            [['123456']],
+        )
+
         paper_text_words = text_to_words(self.PAPER_TEXT, self.PAPER_MAX_LINE_WIDTH)
         paper_optimal_lines = indexes_to_texts(
             optimal_line_indexes, paper_text_words, self.PAPER_MAX_LINE_WIDTH
