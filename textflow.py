@@ -79,10 +79,13 @@ def optimal_line_indexes(words: List[Word], max_width: int, space_width=1) -> Li
 
     # loop on lines backwards
     for lineno in reversed(range(0, len(lines_fwd) - 1)):
-        line_len = functools.reduce(
+        line_len = (
+            functools.reduce(
                 lambda total, width: total + space_width + width,
-                (words[i].width for i in lines_fwd[lineno])
-            ) - words[lines_fwd[lineno][0]].width
+                (words[i].width for i in lines_fwd[lineno]),
+            )
+            - words[lines_fwd[lineno][0]].width
+        )
 
         # loop over lineno-th slack
         for slack in reversed(range(lines_bck[lineno][0], lines_fwd[lineno][0] + 1)):
@@ -91,7 +94,9 @@ def optimal_line_indexes(words: List[Word], max_width: int, space_width=1) -> Li
             cost[slack] = INFINITE
 
             # loop over (lineno+1)-th slack
-            for slack_n1 in reversed(range(lines_bck[lineno + 1][0], lines_fwd[lineno + 1][0] + 1)):
+            for slack_n1 in reversed(
+                range(lines_bck[lineno + 1][0], lines_fwd[lineno + 1][0] + 1)
+            ):
                 line_and_slack_len = line_and_slack_len - space_width - words[slack_n1].width
                 if line_and_slack_len <= max_width:
                     # update cost[slack]  # TODO: see Notes.md#Cost_function
@@ -100,7 +105,9 @@ def optimal_line_indexes(words: List[Word], max_width: int, space_width=1) -> Li
                         cost[slack] = new_cost
                         optimal_break[lineno + 1] = slack_n1
 
-    return [list(range(i,j)) for i,j in zip(optimal_break, optimal_break[1:])] + [list(range(lines_fwd[-1][0], len(words)))]
+    return [list(range(i, j)) for i, j in zip(optimal_break, optimal_break[1:])] + [
+        list(range(lines_fwd[-1][0], len(words)))
+    ]
 
 
 def text_to_words(text: str, max_width: Optional[int] = None) -> List[Word]:
