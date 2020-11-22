@@ -49,7 +49,7 @@ that the last line's cost function is always 2?
 
 The text defines the cost function for a line break as `1+min(C[I,K] *
 C[K+1,J], I <= K < J)` but in the code it's `min(C[I,K] * C[K+1,J], I
-<= K < J) -- that is, the constant factor `1` isn't there.
+<= K < J)` -- that is, the constant factor `1` isn't there.
 
 
 ## DYNAMIC and optimal splits
