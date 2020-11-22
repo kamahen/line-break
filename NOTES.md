@@ -24,8 +24,8 @@ The algorithms in the paper use 1-origin indexing and also a
 2-dimensional array for the cost values. The easiest way of
 representing this in Python is as a dict.
 
-In some cases, the arrays are represented as sparse (e.g.,the `splits`
-dict that I added to record optimal split points).
+In some cases, the arrays are represented as sparse (e.g., the `c`
+dict in LINE-BREAKER that records cost values `c[J]`=`C[J,N]`).
 
 ## Typos in the paper
 
@@ -37,7 +37,7 @@ index.
 ## Cost function
 
 The cost function is defined as
-`1+1/F[I,J]` if `F[I,J]` &le; `D` & `J` &lt; `N`.
+`1+1/F[I,J]` if `F[I,J]` <= `D` & `J` < `N`.
 However, if `F[I,J]` is 1 (a single letter word), then the cost is 2,
 the same as for the first condition of the cost function:
 if `F[I,J]` &le; `D` & `J` = `N`.
@@ -48,10 +48,8 @@ that the last line's cost function is always 2?
 ## Cost function for line breaks
 
 The text defines the cost function for a line break as `1+min(C[I,K] *
-C[K+1,J], I &le; K &lt; J)` but in the code it seems to be
-`min(C[I,K] * C[K+1,J], I &le; K &lt; J) in the code -- that is, the
-constant factor `1` isn't there. I've put the `1+` into
-DYNAMIC - it doesn't make any difference for LINE_BREAKER.
+C[K+1,J], I <= K < J)` but in the code it's `min(C[I,K] * C[K+1,J], I
+<= K < J) -- that is, the constant factor `1` isn't there.
 
 
 ## DYNAMIC and optimal splits

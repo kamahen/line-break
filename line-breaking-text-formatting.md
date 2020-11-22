@@ -397,7 +397,7 @@ behavior.
 ALGORITHM LINE BREAKER
 
     /fast computation of optimal breaking indices
-            P[1],P[2],...,P[M], M &gt; 2.
+            P[1],P[2],...,P[M], M > 2.
     Assume S[I] - latest breaking indices
            E[I] - earliest breaking indices, and
            L[I] - lengths of lines form the
