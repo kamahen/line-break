@@ -77,7 +77,6 @@ def optimal_line_indexes(words: List[Word], max_width: int, space_width=1) -> Li
     cost = len(words) * [INFINITE]
     cost[lines_fwd[-1][0]] = 2.0
 
-    print('>>>', max_width, words)
     # loop on lines backwards
     for lineno in reversed(range(0, len(lines_fwd) - 1)):
         line_len = (
@@ -103,7 +102,7 @@ def optimal_line_indexes(words: List[Word], max_width: int, space_width=1) -> Li
                     if new_cost < cost[slack]:
                         cost[slack] = new_cost
                         optimal_break[lineno + 1] = slack_n1
-            print('***', dict(lineno=lineno, slack=slack, slack_n1=slack_n1, optimal={lineno+1:optimal_break[lineno+1]}, cost={i:c for i,c in enumerate(cost) if c != INFINITE}))
+            # print('***', dict(lineno=lineno, slack=slack, slack_n1=slack_n1, optimal={lineno+1:optimal_break[lineno+1]}, cost={i:c for i,c in enumerate(cost) if c != INFINITE}))  # DO NOT SUBMIT
 
     return [list(range(i, j)) for i, j in zip(optimal_break, optimal_break[1:])] + [
         list(range(lines_fwd[-1][0], len(words)))

@@ -10,6 +10,13 @@ The basic idea is to label each node with the total cost to that
 point, then proceed backwards from the end state, using the lowest
 cost connected node at each step.
 
+And here's a chapter on dynamic programming: [Chapter
+11](http://web.mit.edu/15.053/www/AMP-Chapter-11.pdf) of the text
+[Applied Mathematical
+Programming](http://web.mit.edu/15.053/www/AMP.htm) for [MIT
+15.053](http://web.mit.edu/15.053/www/index.htm) _Optimization Methods
+in Business Analytics._
+
 
 ## 1-origin indexing
 
