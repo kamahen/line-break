@@ -2,13 +2,14 @@
 
 # pylint: disable=invalid-name,fixme,line-too-long,bad-whitespace,too-many-instance-attributes,missing-function-docstring
 
+import textwrap
 import line_break_from_paper
 import line_adjust
 
 
 # The sample text from the paper:
 
-PAPER_TEXT = """
+PAPER_TEXT = textwrap.dedent("""
   We  live in a print-oriented society. Every day
   we produce a huge volume of  printed  material,
   ranging   from  handbills  to  heavy  reference
@@ -16,9 +17,9 @@ PAPER_TEXT = """
   electronic   media,   print  remains  the  most
   versatile and most widely used medium for  mass
   communication.
-"""
+""").strip()
 
-PAPER_EXPECTED_TEXT = """
+PAPER_EXPECTED_TEXT = textwrap.dedent("""
   We  live  in  a  print-oriented  society. Every
   day  we  produce  a  huge  volume  of   printed
   material,   ranging  from  handbills to   heavy
@@ -26,7 +27,7 @@ PAPER_EXPECTED_TEXT = """
   of  electronic  media,  print  remains the most
   versatile and most widely used medium for  mass
   communication.
-"""
+""").strip()
 
 # D: maximum number of characters per line
 PAPER_D = 47
@@ -36,13 +37,15 @@ PARAS = """
 A line
 Another line
 
+
 Start new para
 
 Another para
-with a 2nd line
+  with a 2nd indented line
+
 """
 
-PARAS_SPLIT_EXPECTED = ['A line\nAnother line', 'Start new para', 'Another para\nwith a 2nd line']
+PARAS_SPLIT_EXPECTED = ['A line\nAnother line', 'Start new para', 'Another para\n  with a 2nd indented line']
 
 
 def test_sample_text(sample_text, sample_expected_text, sample_d):
@@ -120,7 +123,6 @@ def line_words(S, W, text_words, i):
 
 
 def main_test():
-    assert list(line_adjust.split_paragraphs(PARAS)) == PARAS_SPLIT_EXPECTED
 
     with open('line-breaking-text-formatting.md') as paper_file:
         paper_paras = list(line_adjust.split_paragraphs(paper_file.read()))
@@ -144,9 +146,18 @@ def main_test():
 
 
 if __name__ == "__main__":
+    split_PARAS= list(line_adjust.split_paragraphs(PARAS))
+    assert split_PARAS == PARAS_SPLIT_EXPECTED, dict(split=split_PARAS, expected=PARAS_SPLIT_EXPECTED)
+
     # print(line_adjust.pad_lines([['First', 'short', 'line'], ['second', 'and', 'longer', 'line'], ['last', 'line.']], 24))
     if True:
         import sys
+
+        # This test broke some things while developing:
+        test_sample_text('# On the Line Breaking Problem in Text Formatting', '# On the Line\nBreaking Problem\nin Text Formatting', 18)
+        print()
+        # sys.exit(1)
+
         test_sample_text('''
                          a444 b444 c
                             d5555 e2
@@ -155,18 +166,17 @@ if __name__ == "__main__":
                          11)
         print()
         # sys.exit(1)
+
         test_sample_text(PAPER_TEXT, PAPER_EXPECTED_TEXT, PAPER_D)
         print()
         # sys.exit(1)
+
         # For figuring out how to read off the lines
         test_sample_text('The line-by-line method is the one that immediately comes to mind and has been used in many text formatting programs', '', 24)
         print()
-        # sys.exit
-        # This test broke some things while developing:
-        test_sample_text('# On the Line Breaking Problem in Text Formatting', '# On the Line\nBreaking Problem\nin Text Formatting', 18)
-        print()
-        # sys.exit
-        # This test happens to have to line breaks with exactly the same cost:
+        # sys.exit(1)
+
+        # This test happens to have two line breaks with exactly the same cost:
         test_sample_text('# On the Line Breaking Problem in Text Formatting', '# On the\nLine\nBreaking\nProblem\nin Text\nFormatting', 8)        # The sample from the paper.
         print()
         sys.exit(1)

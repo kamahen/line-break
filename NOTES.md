@@ -49,22 +49,18 @@ DYNAMIC - it doesn't make any difference for LINE_BREAKER.
 
 ## DYNAMIC and optimal splits
 
-The paper doesn't describe how to extract the optimal split points,
-but implies that it's easy.
+The paper doesn't describe how to extract the optimal split points
+from DYNAMIC, but implies that it's easy.
 
-The solution I came up with was to record whenever a new minimum value
-of C[I,J] is computed for a potential line break. After all the cost
-values are computed, a simple recurisve function collects these: if
-words I-J were recorded as having a split (that is, a line break is
-required and this is the optimal one), then collect the splits for
-I-split and split+1-J.
+My solution is to loop backwards through the lines: for each possible
+line, select the split point that minimizes the cost from the
+beginning of the paragraph to the end of this line. This seems to give
+the same results as LINE-BREAKER.
 
-In the LINE-BREAKER algorithm, only c[i,N] values are used (and
-possibly, implicitly, c[1,i]). It appears from looking at the values,
-that if we pick the minimum value for each "slack", this will also
-produce optimal line-break positions. (I haven't proved this
-rigorously, but it seems to apply for the test case.) This would be
-equivalent to how LINE-BREAKER uses the cost matrix.
+TODO: Better handling of multiple minimal split points. I suggest
+adding a small factor to the cost function that takes into account the
+number of words, not just the width of the words. This will help
+reduce large blocks of white space.
 
 ## c[i] and c[i,N]
 

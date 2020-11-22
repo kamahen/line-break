@@ -15,7 +15,6 @@ ordering of a dict iterator being the same as collections.OrderedDict.
 
 # pylint: disable=invalid-name,fixme,line-too-long,bad-whitespace,too-many-instance-attributes,missing-function-docstring
 
-from itertools import accumulate, takewhile
 import sys
 from typing import Dict, List, Tuple
 
@@ -38,7 +37,7 @@ class LineBreak:
 
     # Dict's simulate 1-origin arrays
 
-    text_words: List[str]           # list of words in paragraph (0-index)
+    text_words: List[str]           # list of words in paragraph (0-index) - not in paper - see also self.text_word()
     D: int                          # max number of chars per line
     N: int                          # number of words in paragraph
     W: Dict[int,int]                # number of chars in I-th word
@@ -50,6 +49,7 @@ class LineBreak:
     L: Dict[int,int]                # length of I-th formatted line
     E: Dict[int,int]                # index of first word, line I, earliest breaking
     C: Dict[Tuple[int,int], float]  # cost function (from I-th to J-th word)
+    F: Dict[Tuple[int,int], int]    # formatted length from I-th to -J-th word
     S: Dict[int,int]                # index of first word in I-th line from LINE_BY_LINE
 
     # Not in the paper:
@@ -66,6 +66,11 @@ class LineBreak:
 
         self.W = {i: min(len(word), D) for i, word in enumerate(self.text_words, 1)}
         assert all(w > 0 for w in self.W.values())
+
+
+    def text_word(self, i):
+        """1-index into self.text_words."""
+        return self.text_words[i - 1]
 
 
     def LINE_BY_LINE(self):
@@ -158,55 +163,54 @@ class LineBreak:
                         C[(I,J)] = 1.0 + 1.0 / F[(I,J)]  # TODO: see Notes.md#Cost_function
                 else:
                     # words I to J have to be split
-                    C[(I,J)] = 1 + C[(I,I)] * C[(I+1,J)] # TODO: the paper doesn't have the "1+"
+                    C[(I,J)] = C[(I,I)] * C[(I+1,J)] # TODO: see Notes.md#Cost_function_for_line_breaks
                     for K in from_to(I + 1, J - 1):
-                        # TODO: replace following 3 lines by: C[(I,J)] = min(C[(I,J)], C[(I,K)] * C[(K+1,J)])
-                        T = 1 + C[(I,K)] * C[(K+1,J)]  # TODO: the paper doesn't have the "1 +"
+                        T = C[(I,K)] * C[(K+1,J)]  # TODO: see Notes.md#Cost_function_for_line_breaks
                         if T < C[(I,J)]:
                             C[(I,J)] = T
         self.C = C
-
-        if False:   # DO NOT SUBMIT
-            print('~~~~~')
-            print('{:>3s}'.format(' '), end='')
-            for j in from_to(1,self.N):
-                print(' {:>8d}'.format(j), end='')
-            print()
-            for i in from_to(1,self.N):
-                print('{:>3d}'.format(i), end='')
-                for j in from_to(1,self.N):
-                    if C[(i,j)] == 0.0:
-                        print(' {:>8s}'.format(' '), end='')
-                    else:
-                        print(' {:>8.5f}'.format(C[(i,j)]), end='')
-                print()
-            print('~~~~~')
+        self.F = F
+        # self.print_C()  # DO NOT SUBMIT
 
         # retrieve optimal starting indices (this is not in the published code)
         # into self.S_dyn.
 
-        # print('***C:', dd({(j,k):C[(j,k)] for j,k in C if j == 1 or k == self.N}))  # DO NOT SUBMIT
-        # print('***C:', dd({k:C[(1,k)]*C[(k+1,self.N)] for k in from_to(1,self.N-1)}))
-        # print('***C:', dd({k:C[(1,k-1)]*C[(k,self.N)] for k in from_to(2,self.N)}))
         starts = [self.S[self.M]]
         while True:
-            # print('**starts:', starts)  # DO NOT SUBMIT
             K = starts[0] - 1
-            if K <= 0:
+            if self.F[(1,K)] <= self.D:
+                starts.insert(0, 1)
                 break
             starts.insert(0, self.split_point(K))
         self.S_dyn = dict(enumerate(starts, 1))
 
 
     def split_point(self, end_K):
-        line_lengths = accumulate(
-            from_downto(end_K - 1, 1),
-            lambda total, i: (i, total[1] + 1 + self.W[i]),
-            initial=(end_K, self.W[end_K]))
-        line_words = list(k for k, _ in takewhile(lambda i: i[1] <= self.D, line_lengths))  # DO NOT SUBMIT: list(...)
-        _, point = min(((self.C[(1,K-1)]*self.C[(K,self.N)] if K > 1 else 0.0, K) for K in line_words),
-                       key=lambda c_k: c_k[0])
+        assert self.F[(1,end_K)] > self.D
+        line_words = [K for K in from_to(1,end_K) if self.F[(K,end_K)] <= self.D]
+        # The reversed(...) in the following is for tie-breaks that
+        # match what LINE_BREAKER does.
+        Cs = [(self.C[(1,K-1)]*self.C[(K,end_K)], K) for K in reversed(line_words)]  # TODO: generator
+        _, point = min(Cs, key=lambda c_k: c_k[0])
+        # print('***split', (point, self.text_word(point)), 'end_K:', end_K, line_words, 'Cs:', [(c,n,self.text_word(n)) for c,n in Cs], 'F:', {K:self.F[(K,end_K)] for K in from_to(1,end_K)}, 'D:', self.D)  # DO NOT SUBMIT
         return point
+
+
+    def print_C(self): # for debugging
+        print('~~~~~')
+        print('{:>3s}'.format(' '), end='')
+        for j in from_to(1,self.N):
+            print(' {:>8d}'.format(j), end='')
+        print()
+        for i in from_to(1,self.N):
+            print('{:>3d}'.format(i), end='')
+            for j in from_to(1,self.N):
+                if self.C[(i,j)] == 0.0:
+                    print(' {:>8s}'.format('0'), end='')
+                else:
+                    print(' {:>8.5f}'.format(self.C[(i,j)]), end='')
+            print()
+        print('~~~~~')
 
 
     def LINE_BREAKER(self):
@@ -225,15 +229,14 @@ class LineBreak:
 
         c = {self.S[self.M]: 2.0}
         # c = {J: 2.0 for J in from_to(1, self.N)}  # <==== TODO: is this correct, to avoid "K in c" test below?
-        # print('++', {'M':self.M, 'S':self.S, 'E':self.E, 'L':self.L, 'c':c})  # DO NOT SUBMIT
         self.P = {}
+        P2 = {1:1, self.M:self.S[self.M]}  # Not in paper - an alternative way of computing P
         assert len(self.S) == len(self.E)  # TODO: added
         assert all(self.S[i] >= self.E[i] for i in from_to(1, len(self.S)))  # TODO: added
 
         # loop on lines backwards
         for I in from_downto(self.M - 1, 1):
             X = self.L[I] - 1 - self.W[self.S[I]]
-            # print({'I':I, 'X':X, 'L[I]':self.L[I], 'W[S[I]]':self.W[self.S[I]], 'S[I]':self.S[I], 'E[I]':self.E[I]})  # DO NOT SUBMIT
 
             # loop over I-th slack
             for J in from_downto(self.S[I], self.E[I]):
@@ -243,16 +246,15 @@ class LineBreak:
 
                 # loop over (I+1)-th slack
                 assert self.S[I+1] >= self.E[I+1]
-                # print(' ', {'J':J, 'X':X, 'Y':Y, 'c':c, 'S[I+1]':self.S[I+1], 'E[I+1]':self.E[I+1]})  # DO NOT SUBMIT
                 for K in from_downto(self.S[I+1], self.E[I+1]):
                     Y = Y - 1 - self.W[K]
-                    # print('   ', {'K':K, 'Y':Y, 'Y<=D':Y <= self.D, 'c':c, 'P':self.P})  # DO NOT SUBMIT
                     if Y <= self.D and K in c:  # TODO: added "if K in c"
                         # update c[J]
                         Z = (1.0 + 1.0 / Y) * c[K]  # TODO: see Notes.md#Cost_function
                         if Z < c[J]:
                             c[J] = Z
                             self.P[I] = K  # <=== TODO: "P[J]" in the original is clearly wrong.
+                            P2[I+1] = K  # TODO: not in paper
 
         # retrieve optimal starting indices
         # print('P(1):', dd(self.P))  # DO NOT SUBMIT
@@ -264,6 +266,7 @@ class LineBreak:
             self.P[I] = J
             J = K
         # print('P(2):', dd(self.P))  # DO NOT SUBMIT
+        assert P2 == self.P
         # print('S_dyn:', dd(self.S_dyn))  # DO NOT SUBMIT
 
 

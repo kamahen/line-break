@@ -5,7 +5,6 @@ import unittest
 from textflow import (
     Word,
     indexes_to_texts,
-    indexes_to_words,
     text_to_words,
     split_text_to_words,
     split_text,
@@ -238,7 +237,8 @@ class TestSplit(unittest.TestCase):
 
 
 def text_to_list_of_lines(text):
-    """Convert text into a list of lines, each being a list of words."""
+    """Convert text into a list of (Unix-style) lines, each being a list of words."""
+    # TODO: move this to main module
     return [line.split() for line in text.strip().split('\n')]
 
 
