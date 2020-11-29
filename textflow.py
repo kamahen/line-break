@@ -18,24 +18,42 @@ hyphenation. To allow this, the API allows specifying a list of words
 with custom-computed widths.
 """
 
-from dataclasses import dataclass
+# TODO: restore the type annotations (removed for testing pytype)
+
 import functools
 import sys
 from typing import List, Optional
 
-assert sys.version_info >= (3, 9)
+assert sys.version_info >= (3, 7)
 
 # INFINITE is any number larger than maximum
 INFINITE = sys.float_info.max
 
 
-@dataclass(frozen=True)
-class Word:
+# @dataclass(frozen=True)  # TODO: restore this
+# class Word:
+#     """A word with its attributes."""
+
+#     text: str
+#     width: int
+#     __slots__ = ['text', 'width']
+
+class Word:  # TODO: use @dataclass(frozen=True)
     """A word with its attributes."""
 
-    text: str
-    width: int
     __slots__ = ['text', 'width']
+
+    # def __init__(self, text: str, width: int) -> None:  # TODO: restore
+    def __init__(self, text, width):
+        self.text = text
+        self.width = width
+
+    # def __eq__(self, other: Any) -> bool:  # TODO: restore
+    def __eq__(self, other):
+        return isinstance(other, Word) and self.text == other.text and self.width == other.width
+
+    def __repr__(self):
+        return f'Word({self.text!r}, width={self.width!r})'
 
 
 def map_line_words(fn, list_of_lines):
@@ -44,15 +62,18 @@ def map_line_words(fn, list_of_lines):
     return [[fn(word) for word in line] for line in list_of_lines]
 
 
-def indexes_to_words(fn, words: List[Word], max_width: int, space_width=1) -> List[List[Word]]:
+# def indexes_to_words(fn, words: List[Word], max_width: int, space_width=1) -> List[List[Word]]:  # TODO: restore
+def indexes_to_words(fn, words, max_width, space_width=1):
     return map_line_words(lambda i: words[i], fn(words, max_width, space_width))
 
 
-def indexes_to_texts(fn, words: List[Word], max_width: int, space_width=1) -> List[List[str]]:
+# def indexes_to_texts(fn, words: List[Word], max_width: int, space_width=1) -> List[List[str]]:  # TODO: restore
+def indexes_to_texts(fn, words, max_width, space_width=1):
     return map_line_words(lambda i: words[i].text, fn(words, max_width, space_width))
 
 
-def optimal_line_indexes(words: List[Word], max_width: int, space_width=1) -> List[List[int]]:
+# def optimal_line_indexes(words: List[Word], max_width: int, space_width=1) -> List[List[int]]:  # TODO: restore
+def optimal_line_indexes(words, max_width, space_width=1):
     """Optimal algorithm for flowing text in a paragraph.
 
     Assumes words has run through adjust_words.
@@ -109,12 +130,14 @@ def optimal_line_indexes(words: List[Word], max_width: int, space_width=1) -> Li
     ]
 
 
-def text_to_words(text: str, max_width: Optional[int] = None) -> List[Word]:
+# def text_to_words(text: str, max_width: Optional[int] = None) -> List[Word]:  # TODO: restore
+def text_to_words(text, max_width=None):
     """Split arbitrary text into list of Word."""
     return split_text_to_words(split_text(text), max_width)
 
 
-def split_text_to_words(words: List[str], max_width: Optional[int] = None) -> List[Word]:
+# def split_text_to_words(words: List[str], max_width: Optional[int] = None) -> List[Word]:  # TODO: restore
+def split_text_to_words(words, max_width=None):
     """Transform split text into list of Word.
 
     If max_width isn't specified, you need to call adjust_words to
@@ -127,34 +150,39 @@ def split_text_to_words(words: List[str], max_width: Optional[int] = None) -> Li
         return [Word(word, len(word)) for word in words]
 
 
-def split_text(text: str) -> List[str]:
+# def split_text(text: str) -> List[str]:  # TODO: restore
+def split_text(text):
     """Split arbitrary text into words (str)."""
     return text.split()
 
 
-def adjust_words(words: List[Word], max_width: int) -> List[Word]:
+# def adjust_words(words: List[Word], max_width: int) -> List[Word]:  # TODO: restore
+def adjust_words(words, max_width):
     """Handle extra-long words in list of words."""
     assert max_width > 0
     return [Word(w.text, min(w.width, max_width)) for w in words]
 
 
-def line_by_line_indexes(words: List[Word], max_width: int, space_width=1) -> List[List[int]]:
+# def line_by_line_indexes(words: List[Word], max_width: int, space_width=1) -> List[List[int]]:  # TODO: restore
+def line_by_line_indexes(words, max_width, space_width=1):
     """Greedy algorithm for flowing text in a paragraph - returns indexes into words.
 
     Assumes words has run through adjust_words.
     """
-    line: List[int] = []
-    lines: List[List[int]] = []
+    # curr_line: List[int] = []  # TODO: restore
+    # lines: List[List[int]] = []  # TODO: restore
+    curr_line = []
+    lines = []
     line_width = -space_width
     for i, word in enumerate(words):
         line_width += space_width + word.width
         if line_width > max_width:
-            lines.append(line)
+            lines.append(curr_line)
             line_width = word.width
-            line = [i]
+            curr_line = [i]
         else:
-            line.append(i)
-    lines.append(line)
+            curr_line.append(i)
+    lines.append(curr_line)
     return lines
 
 
@@ -164,16 +192,23 @@ def line_by_line_reversed_indexes(words: List[Word], max_width: int, space_width
 
     Assumes words has run through adjust_words.
     """
-    line: List[int] = []
-    lines: List[List[int]] = []
+    # curr_line: List[int] = []  # TODO: restore
+    # lines: List[List[int]] = []  # TODO: restore
+    curr_line = []
+    lines = []
     line_width = -space_width
     for i, word in reversed(list(enumerate(words))):
         line_width += space_width + word.width
         if line_width > max_width:
-            lines.insert(0, line)
+            lines.insert(0, curr_line)
             line_width = word.width
-            line = [i]
+            curr_line = [i]
         else:
-            line.insert(0, i)
-    lines.insert(0, line)
+            curr_line.insert(0, i)
+    lines.insert(0, curr_line)
     return lines
+
+
+if __name__ == '__main__':
+    # For pytype, except it doesn't seem to trigger anything
+    assert indexes_to_texts(optimal_line_indexes, text_to_words('', 10), 10) == [[]]
