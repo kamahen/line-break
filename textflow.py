@@ -18,65 +18,86 @@ hyphenation. To allow this, the API allows specifying a list of words
 with custom-computed widths.
 """
 
-# TODO: restore the type annotations (removed for testing pytype)
+# TODO: pytype -V 3.8 --protocols --precise-return --check-attribute-types --check-container-types --check-parameter-types --check-variable-types textflow.py
 
 import functools
 import sys
-from typing import List, Optional
+from typing import Any, Callable, Iterable, List, Optional, Type, TypeVar
 
-assert sys.version_info >= (3, 7)
+assert sys.version_info >= (3, 8)  # TODO: 3.9 (pytype doesn't support 3.9)
 
 # INFINITE is any number larger than maximum
 INFINITE = sys.float_info.max
 
+class Word(tuple):
+    """A word with its attributes (width).
 
-# @dataclass(frozen=True)  # TODO: restore this
-# class Word:
-#     """A word with its attributes."""
+    text: str
+    width: int
+    """
 
-#     text: str
-#     width: int
-#     __slots__ = ['text', 'width']
+    def __new__ (cls: Type['Word'], text: str, width: int) -> 'Word':
+        """Create a Word object (immutable)."""
+        return tuple.__new__(cls, (text, width))
 
-class Word:  # TODO: use @dataclass(frozen=True)
-    """A word with its attributes."""
+    def __init__(self, text: str, width: int) -> None:
+        """A do-nothing __init__ to make pytype happy."""
+        pass
 
-    __slots__ = ['text', 'width']
+    @property
+    def text(self) -> str:
+        """Alias Word.text."""
+        return self[0]
 
-    # def __init__(self, text: str, width: int) -> None:  # TODO: restore
-    def __init__(self, text, width):
-        self.text = text
-        self.width = width
+    @property
+    def width(self) -> int:
+        """Alias word.width."""
+        return self[1]
 
-    # def __eq__(self, other: Any) -> bool:  # TODO: restore
-    def __eq__(self, other):
-        return isinstance(other, Word) and self.text == other.text and self.width == other.width
+    def __eq__(self, other: Any) -> bool:
+        """Equality test - only used in unit tests."""
+        return isinstance(other, Word) and tuple.__eq__(self, other)
 
-    def __repr__(self):
-        return f'Word({self.text!r}, width={self.width!r})'
+    def __repr__(self) -> str:
+        """String representation of a Word(text, width)."""
+        return f'Word({self.text!r}, {self.width!r})'
 
 
-def map_line_words(fn, list_of_lines):
+T1 = TypeVar('T1')
+T2 = TypeVar('T2')
+
+def map_line_words(fn: Callable[[T1], T2], list_of_lines: Iterable[Iterable[T1]]) -> List[List[T2]]:
     """Apply fn to each word in list_of_lines."""
-
     return [[fn(word) for word in line] for line in list_of_lines]
 
 
-# def indexes_to_words(fn, words: List[Word], max_width: int, space_width=1) -> List[List[Word]]:  # TODO: restore
-def indexes_to_words(fn, words, max_width, space_width=1):
-    return map_line_words(lambda i: words[i], fn(words, max_width, space_width))
+def indexes_to_words(line_indexes: Callable[[List[Word], int, int], List[List[int]]],
+                     words: List[Word],
+                     max_width: int, space_width=1) -> List[List[Word]]:
+    """Apply line_indexes algorithm (with max_width lines) to words, outputting lines of Word's."""
+    return map_line_words(lambda i: words[i], line_indexes(words, max_width, space_width))
 
 
-# def indexes_to_texts(fn, words: List[Word], max_width: int, space_width=1) -> List[List[str]]:  # TODO: restore
-def indexes_to_texts(fn, words, max_width, space_width=1):
-    return map_line_words(lambda i: words[i].text, fn(words, max_width, space_width))
+def indexes_to_texts(line_indexes: Callable[[List[Word], int, int], List[List[int]]],
+                     words: List[Word],
+                     max_width: int, space_width=1) -> List[List[str]]:
+    """Apply line_indexes algorithm (with max_width lines) to words, outputting lines of str's."""
+    return map_line_words(lambda i: words[i].text, line_indexes(words, max_width, space_width))
 
 
-# def optimal_line_indexes(words: List[Word], max_width: int, space_width=1) -> List[List[int]]:  # TODO: restore
-def optimal_line_indexes(words, max_width, space_width=1):
+
+def text_to_text_lines(line_indexes: Callable[[List[Word], int, int], List[List[int]]],
+                       text: str,
+                       max_width: int, space_width=1) -> List[List[str]]:
+    """Apply line_indexes algorithm (with max_width lines) to text, outputting lines of str's."""
+    return indexes_to_texts(line_indexes, text_to_words(text, max_width), max_width, space_width)
+
+
+def optimal_line_indexes(words: List[Word], max_width: int, space_width=1) -> List[List[int]]:
     """Optimal algorithm for flowing text in a paragraph.
 
-    Assumes words has run through adjust_words.
+    Assumes words has been run through adjust_words or produced by
+    split_text_to_words with max_width specified.
     """
 
     lines_fwd = line_by_line_indexes(words, max_width)
@@ -130,14 +151,12 @@ def optimal_line_indexes(words, max_width, space_width=1):
     ]
 
 
-# def text_to_words(text: str, max_width: Optional[int] = None) -> List[Word]:  # TODO: restore
-def text_to_words(text, max_width=None):
+def text_to_words(text: str, max_width: Optional[int] = None) -> List[Word]:
     """Split arbitrary text into list of Word."""
     return split_text_to_words(split_text(text), max_width)
 
 
-# def split_text_to_words(words: List[str], max_width: Optional[int] = None) -> List[Word]:  # TODO: restore
-def split_text_to_words(words, max_width=None):
+def split_text_to_words(words: Iterable[str], max_width: Optional[int] = None) -> List[Word]:
     """Transform split text into list of Word.
 
     If max_width isn't specified, you need to call adjust_words to
@@ -150,29 +169,25 @@ def split_text_to_words(words, max_width=None):
         return [Word(word, len(word)) for word in words]
 
 
-# def split_text(text: str) -> List[str]:  # TODO: restore
-def split_text(text):
+def split_text(text: str) -> List[str]:
     """Split arbitrary text into words (str)."""
     return text.split()
 
 
-# def adjust_words(words: List[Word], max_width: int) -> List[Word]:  # TODO: restore
-def adjust_words(words, max_width):
+def adjust_words(words: Iterable[Word], max_width: int) -> List[Word]:
     """Handle extra-long words in list of words."""
     assert max_width > 0
     return [Word(w.text, min(w.width, max_width)) for w in words]
 
 
-# def line_by_line_indexes(words: List[Word], max_width: int, space_width=1) -> List[List[int]]:  # TODO: restore
-def line_by_line_indexes(words, max_width, space_width=1):
+def line_by_line_indexes(words: Iterable[Word], max_width: int, space_width=1) -> List[List[int]]:
     """Greedy algorithm for flowing text in a paragraph - returns indexes into words.
 
-    Assumes words has run through adjust_words.
+    Assumes words has been run through adjust_words or produced by
+    split_text_to_words with max_width specified.
     """
-    # curr_line: List[int] = []  # TODO: restore
-    # lines: List[List[int]] = []  # TODO: restore
-    curr_line = []
-    lines = []
+    curr_line: List[int] = []
+    lines: List[List[int]] = []
     line_width = -space_width
     for i, word in enumerate(words):
         line_width += space_width + word.width
@@ -190,12 +205,11 @@ def line_by_line_reversed_indexes(words: List[Word], max_width: int, space_width
     """Greedy algorithm for flowing text in a paragraph, with the lines
     being assigned in reverse order - returns indexes into words.
 
-    Assumes words has run through adjust_words.
+    Assumes words has been run through adjust_words or produced by
+    split_text_to_words with max_width specified.
     """
-    # curr_line: List[int] = []  # TODO: restore
-    # lines: List[List[int]] = []  # TODO: restore
-    curr_line = []
-    lines = []
+    curr_line: List[int] = []
+    lines: List[List[int]] = []
     line_width = -space_width
     for i, word in reversed(list(enumerate(words))):
         line_width += space_width + word.width
@@ -207,8 +221,3 @@ def line_by_line_reversed_indexes(words: List[Word], max_width: int, space_width
             curr_line.insert(0, i)
     lines.insert(0, curr_line)
     return lines
-
-
-if __name__ == '__main__':
-    # For pytype, except it doesn't seem to trigger anything
-    assert indexes_to_texts(optimal_line_indexes, text_to_words('', 10), 10) == [[]]

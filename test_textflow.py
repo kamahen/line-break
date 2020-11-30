@@ -1,17 +1,19 @@
 """Test the various algorithms in textflow."""
 
 import functools
+from typing import List
 import unittest
 from textflow import (
     Word,
-    indexes_to_texts,
-    text_to_words,
-    split_text_to_words,
-    split_text,
     adjust_words,
+    indexes_to_texts,
     line_by_line_indexes,
     line_by_line_reversed_indexes,
     optimal_line_indexes,
+    split_text,
+    split_text_to_words,
+    text_to_text_lines,
+    text_to_words,
 )
 
 
@@ -226,6 +228,11 @@ class TestSplit(unittest.TestCase):
             ),
             [['123456']],
         )
+        self.assertEqual(
+            text_to_text_lines(
+                optimal_line_indexes,
+                '123456', 5),
+            [['123456']])
 
         paper_text_words = text_to_words(self.PAPER_TEXT, self.PAPER_MAX_LINE_WIDTH)
         paper_optimal_lines = indexes_to_texts(
@@ -236,7 +243,7 @@ class TestSplit(unittest.TestCase):
         self.assertEqual(paper_optimal_lines, paper_expected_optimal_lines)
 
 
-def text_to_list_of_lines(text):
+def text_to_list_of_lines(text: str) -> List[List[str]]:
     """Convert text into a list of (Unix-style) lines, each being a list of words."""
     # TODO: move this to main module
     return [line.split() for line in text.strip().split('\n')]
