@@ -229,10 +229,9 @@ class TestSplit(unittest.TestCase):
             [['123456']],
         )
         self.assertEqual(
-            text_to_text_lines(
-                optimal_line_indexes,
-                '123456', 5),
-            [['123456']])
+            text_to_text_lines(optimal_line_indexes, '123456', 5),
+            [['123456']],
+        )
 
         paper_text_words = text_to_words(self.PAPER_TEXT, self.PAPER_MAX_LINE_WIDTH)
         paper_optimal_lines = indexes_to_texts(

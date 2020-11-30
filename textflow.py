@@ -29,6 +29,7 @@ assert sys.version_info >= (3, 8)  # TODO: 3.9 (pytype doesn't support 3.9)
 # INFINITE is any number larger than maximum
 INFINITE = sys.float_info.max
 
+
 class Word(tuple):
     """A word with its attributes (width).
 
@@ -36,7 +37,7 @@ class Word(tuple):
     width: int
     """
 
-    def __new__ (cls: Type['Word'], text: str, width: int) -> 'Word':
+    def __new__(cls: Type['Word'], text: str, width: int) -> 'Word':
         """Create a Word object (immutable)."""
         return tuple.__new__(cls, (text, width))
 
@@ -66,29 +67,40 @@ class Word(tuple):
 T1 = TypeVar('T1')
 T2 = TypeVar('T2')
 
-def map_line_words(fn: Callable[[T1], T2], list_of_lines: Iterable[Iterable[T1]]) -> List[List[T2]]:
+
+def map_line_words(
+    fn: Callable[[T1], T2], list_of_lines: Iterable[Iterable[T1]]
+) -> List[List[T2]]:
     """Apply fn to each word in list_of_lines."""
     return [[fn(word) for word in line] for line in list_of_lines]
 
 
-def indexes_to_words(line_indexes: Callable[[List[Word], int, int], List[List[int]]],
-                     words: List[Word],
-                     max_width: int, space_width=1) -> List[List[Word]]:
+def indexes_to_words(
+    line_indexes: Callable[[List[Word], int, int], List[List[int]]],
+    words: List[Word],
+    max_width: int,
+    space_width=1,
+) -> List[List[Word]]:
     """Apply line_indexes algorithm (with max_width lines) to words, outputting lines of Word's."""
     return map_line_words(lambda i: words[i], line_indexes(words, max_width, space_width))
 
 
-def indexes_to_texts(line_indexes: Callable[[List[Word], int, int], List[List[int]]],
-                     words: List[Word],
-                     max_width: int, space_width=1) -> List[List[str]]:
+def indexes_to_texts(
+    line_indexes: Callable[[List[Word], int, int], List[List[int]]],
+    words: List[Word],
+    max_width: int,
+    space_width=1,
+) -> List[List[str]]:
     """Apply line_indexes algorithm (with max_width lines) to words, outputting lines of str's."""
     return map_line_words(lambda i: words[i].text, line_indexes(words, max_width, space_width))
 
 
-
-def text_to_text_lines(line_indexes: Callable[[List[Word], int, int], List[List[int]]],
-                       text: str,
-                       max_width: int, space_width=1) -> List[List[str]]:
+def text_to_text_lines(
+    line_indexes: Callable[[List[Word], int, int], List[List[int]]],
+    text: str,
+    max_width: int,
+    space_width=1,
+) -> List[List[str]]:
     """Apply line_indexes algorithm (with max_width lines) to text, outputting lines of str's."""
     return indexes_to_texts(line_indexes, text_to_words(text, max_width), max_width, space_width)
 
@@ -136,7 +148,9 @@ def optimal_line_indexes(words: List[Word], max_width: int, space_width=1) -> Li
             # cost[slack] has been already initialized to INFINITE
 
             # loop over (lineno+1)-th slack
-            for slack_n1 in reversed(range(lines_bck[lineno + 1][0], lines_fwd[lineno + 1][0] + 1)):
+            for slack_n1 in reversed(
+                range(lines_bck[lineno + 1][0], lines_fwd[lineno + 1][0] + 1)
+            ):
                 line_and_slack_len = line_and_slack_len - space_width - words[slack_n1].width
                 if line_and_slack_len <= max_width:
                     # update cost[slack]  # TODO: see Notes.md#Cost_function
@@ -201,7 +215,9 @@ def line_by_line_indexes(words: Iterable[Word], max_width: int, space_width=1) -
     return lines
 
 
-def line_by_line_reversed_indexes(words: List[Word], max_width: int, space_width=1) -> List[List[int]]:
+def line_by_line_reversed_indexes(
+    words: List[Word], max_width: int, space_width=1
+) -> List[List[int]]:
     """Greedy algorithm for flowing text in a paragraph, with the lines
     being assigned in reverse order - returns indexes into words.
 
