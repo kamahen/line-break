@@ -5,7 +5,6 @@ from typing import List
 import unittest
 from textflow import (
     Word,
-    adjust_words,
     indexes_to_texts,
     line_by_line_indexes,
     line_by_line_reversed_indexes,
@@ -35,14 +34,6 @@ class TestSplit(unittest.TestCase):
         Word('He', 2),
         Word('was', 3),
         Word('defenestrated', 13),
-        Word('without', 7),
-        Word('cause.', 6),
-    ]
-
-    adjust_words_Words = [
-        Word('He', 2),
-        Word('was', 3),
-        Word('defenestrated', max_line_width),
         Word('without', 7),
         Word('cause.', 6),
     ]
@@ -96,45 +87,35 @@ class TestSplit(unittest.TestCase):
 
     def test_text_to_words(self):
         self.assertEqual(text_to_words(''), [])
-        self.assertEqual(text_to_words('', self.max_line_width), [])
-        self.assertEqual(text_to_words(self.text), self.words_Words)
+        self.assertEqual(text_to_words(''), [])
         self.assertEqual(
-            text_to_words(self.text, self.max_line_width),
-            self.adjust_words_Words,
-        )
-        self.assertEqual(
-            adjust_words(self.words_Words, self.max_line_width),
-            self.adjust_words_Words,
-        )
-        self.assertEqual(adjust_words([], self.max_line_width), [])
-        self.assertEqual(
-            adjust_words(self.adjust_words_Words, self.max_line_width),
-            self.adjust_words_Words,
+            text_to_words(self.text),
+            self.words_Words,
         )
 
     def test_line_by_line(self):
         self.assertEqual(
-            line_by_line_indexes(text_to_words('', self.max_line_width), self.max_line_width),
+            line_by_line_indexes(text_to_words(''), self.max_line_width),
             [[]],
         )
         self.assertEqual(
             indexes_to_texts(
                 line_by_line_indexes,
-                text_to_words('', self.max_line_width),
+                text_to_words(''),
                 self.max_line_width,
             ),
             [[]],
         )
         self.assertEqual(
             line_by_line_reversed_indexes(
-                text_to_words('', self.max_line_width), self.max_line_width
+                text_to_words(''), self.max_line_width
             ),
             [[]],
         )
         self.assertEqual(
             indexes_to_texts(
                 line_by_line_reversed_indexes,
-                text_to_words('', self.max_line_width),
+                text_to_words(''),
                 self.max_line_width,
             ),
             [[]],
@@ -142,34 +123,34 @@ class TestSplit(unittest.TestCase):
 
         self.assertEqual(
             line_by_line_indexes(
-                text_to_words(self.text, self.max_line_width), self.max_line_width
+                text_to_words(self.text), self.max_line_width
             ),
             [[0, 1], [2], [3], [4]],
         )
         self.assertEqual(
             indexes_to_texts(
                 line_by_line_indexes,
-                text_to_words(self.text, self.max_line_width),
+                text_to_words(self.text),
                 self.max_line_width,
             ),
             [['He', 'was'], ['defenestrated'], ['without'], ['cause.']],
         )
         self.assertEqual(
             line_by_line_reversed_indexes(
-                text_to_words(self.text, self.max_line_width), self.max_line_width
+                text_to_words(self.text), self.max_line_width
             ),
             [[0, 1], [2], [3], [4]],
         )
         self.assertEqual(
             indexes_to_texts(
                 line_by_line_reversed_indexes,
-                text_to_words(self.text, self.max_line_width),
+                text_to_words(self.text),
                 self.max_line_width,
             ),
             [['He', 'was'], ['defenestrated'], ['without'], ['cause.']],
         )
 
-        paper_text_words = text_to_words(self.PAPER_TEXT, self.PAPER_MAX_LINE_WIDTH)
+        paper_text_words = text_to_words(self.PAPER_TEXT)
         paper_greedy_lines_index = line_by_line_indexes(
             paper_text_words, self.PAPER_MAX_LINE_WIDTH
         )
@@ -197,7 +178,7 @@ class TestSplit(unittest.TestCase):
                 len(' '.join(line)) <= self.PAPER_MAX_LINE_WIDTH
                 for line in indexes_to_texts(
                     line_by_line_reversed_indexes,
-                    text_to_words(self.PAPER_TEXT, self.PAPER_MAX_LINE_WIDTH),
+                    text_to_words(self.PAPER_TEXT),
                     self.PAPER_MAX_LINE_WIDTH,
                 )
             )
@@ -205,25 +186,25 @@ class TestSplit(unittest.TestCase):
 
     def test_optimal_lines(self):
         self.assertEqual(
-            optimal_line_indexes(text_to_words('', self.max_line_width), self.max_line_width),
+            optimal_line_indexes(text_to_words(''), self.max_line_width),
             [[]],
         )
         self.assertEqual(
             indexes_to_texts(
                 optimal_line_indexes,
-                text_to_words('', self.max_line_width),
+                text_to_words(''),
                 self.max_line_width,
             ),
             [[]],
         )
         self.assertEqual(
-            optimal_line_indexes(text_to_words('12345', 5), 5),
+            optimal_line_indexes(text_to_words('12345'), 5),
             [[0]],
         )
         self.assertEqual(
             indexes_to_texts(
                 optimal_line_indexes,
-                text_to_words('123456', 5),
+                text_to_words('123456'),
                 5,
             ),
             [['123456']],
@@ -233,7 +214,7 @@ class TestSplit(unittest.TestCase):
             [['123456']],
         )
 
-        paper_text_words = text_to_words(self.PAPER_TEXT, self.PAPER_MAX_LINE_WIDTH)
+        paper_text_words = text_to_words(self.PAPER_TEXT)
         paper_optimal_lines = indexes_to_texts(
             optimal_line_indexes, paper_text_words, self.PAPER_MAX_LINE_WIDTH
         )

@@ -50,10 +50,9 @@ class Word(tuple):
         """Alias Word.text."""
         return self[0]
 
-    @property
-    def width(self) -> int:
-        """Alias word.width."""
-        return self[1]
+    def width_min(self, max_width: int) -> int:
+        """Get Word.width, but no larger than max_width."""
+        return min(self[1], max_width)
 
     def __eq__(self, other: Any) -> bool:
         """Equality test - only used in unit tests."""
@@ -102,15 +101,11 @@ def text_to_text_lines(
     space_width=1,
 ) -> List[List[str]]:
     """Apply line_indexes algorithm (with max_width lines) to text, outputting lines of str's."""
-    return indexes_to_texts(line_indexes, text_to_words(text, max_width), max_width, space_width)
+    return indexes_to_texts(line_indexes, text_to_words(text), max_width, space_width)
 
 
 def optimal_line_indexes(words: List[Word], max_width: int, space_width=1) -> List[List[int]]:
-    """Optimal algorithm for flowing text in a paragraph.
-
-    Assumes words has been run through adjust_words or produced by
-    split_text_to_words with max_width specified.
-    """
+    """Optimal algorithm for flowing text in a paragraph."""
 
     lines_fwd = line_by_line_indexes(words, max_width)
     lines_bck = line_by_line_reversed_indexes(words, max_width)
@@ -136,22 +131,22 @@ def optimal_line_indexes(words: List[Word], max_width: int, space_width=1) -> Li
         line_len = (
             functools.reduce(
                 lambda total, width: total + space_width + width,
-                (words[i].width for i in lines_fwd[lineno]),
+                (words[i].width_min(max_width) for i in lines_fwd[lineno]),
             )
-            - words[lines_fwd[lineno][0]].width
+            - words[lines_fwd[lineno][0]].width_min(max_width)
         )
 
         # loop over lineno-th slack
         for slack in reversed(range(lines_bck[lineno][0], lines_fwd[lineno][0] + 1)):
-            line_len = line_len + space_width + words[slack].width
-            line_and_slack_len = line_len + space_width + words[lines_fwd[lineno + 1][0]].width
+            line_len = line_len + space_width + words[slack].width_min(max_width)
+            line_and_slack_len = line_len + space_width + words[lines_fwd[lineno + 1][0]].width_min(max_width)
             # cost[slack] has been already initialized to INFINITE
 
             # loop over (lineno+1)-th slack
             for slack_n1 in reversed(
                 range(lines_bck[lineno + 1][0], lines_fwd[lineno + 1][0] + 1)
             ):
-                line_and_slack_len = line_and_slack_len - space_width - words[slack_n1].width
+                line_and_slack_len = line_and_slack_len - space_width - words[slack_n1].width_min(max_width)
                 if line_and_slack_len <= max_width:
                     # update cost[slack]  # TODO: see Notes.md#Cost_function
                     new_cost = (1.0 + 1.0 / line_and_slack_len) * cost[slack_n1]
@@ -165,33 +160,19 @@ def optimal_line_indexes(words: List[Word], max_width: int, space_width=1) -> Li
     ]
 
 
-def text_to_words(text: str, max_width: Optional[int] = None) -> List[Word]:
+def text_to_words(text: str) -> List[Word]:
     """Split arbitrary text into list of Word."""
-    return split_text_to_words(split_text(text), max_width)
+    return split_text_to_words(split_text(text))
 
 
-def split_text_to_words(words: Iterable[str], max_width: Optional[int] = None) -> List[Word]:
-    """Transform split text into list of Word.
-
-    If max_width isn't specified, you need to call adjust_words to
-    ensure proper behavior by the various text flow algorithms.
-    """
-    if max_width:
-        assert max_width > 0
-        return [Word(word, min(max_width, len(word))) for word in words]
-    else:
-        return [Word(word, len(word)) for word in words]
+def split_text_to_words(words: Iterable[str]) -> List[Word]:
+    """Transform split text into list of Word."""
+    return [Word(word, len(word)) for word in words]
 
 
 def split_text(text: str) -> List[str]:
     """Split arbitrary text into words (str)."""
     return text.split()
-
-
-def adjust_words(words: Iterable[Word], max_width: int) -> List[Word]:
-    """Handle extra-long words in list of words."""
-    assert max_width > 0
-    return [Word(w.text, min(w.width, max_width)) for w in words]
 
 
 def line_by_line_indexes(words: Iterable[Word], max_width: int, space_width=1) -> List[List[int]]:
@@ -204,10 +185,10 @@ def line_by_line_indexes(words: Iterable[Word], max_width: int, space_width=1) -
     lines: List[List[int]] = []
     line_width = -space_width
     for i, word in enumerate(words):
-        line_width += space_width + word.width
+        line_width += space_width + word.width_min(max_width)
         if line_width > max_width:
             lines.append(curr_line)
-            line_width = word.width
+            line_width = word.width_min(max_width)
             curr_line = [i]
         else:
             curr_line.append(i)
@@ -228,10 +209,10 @@ def line_by_line_reversed_indexes(
     lines: List[List[int]] = []
     line_width = -space_width
     for i, word in reversed(list(enumerate(words))):
-        line_width += space_width + word.width
+        line_width += space_width + word.width_min(max_width)
         if line_width > max_width:
             lines.insert(0, curr_line)
-            line_width = word.width
+            line_width = word.width_min(max_width)
             curr_line = [i]
         else:
             curr_line.insert(0, i)
