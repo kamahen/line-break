@@ -107,9 +107,7 @@ class TestSplit(unittest.TestCase):
             [[]],
         )
         self.assertEqual(
-            line_by_line_reversed_indexes(
-                text_to_words(''), self.max_line_width
-            ),
+            line_by_line_reversed_indexes(text_to_words(''), self.max_line_width),
             [[]],
         )
         self.assertEqual(
@@ -122,9 +120,7 @@ class TestSplit(unittest.TestCase):
         )
 
         self.assertEqual(
-            line_by_line_indexes(
-                text_to_words(self.text), self.max_line_width
-            ),
+            line_by_line_indexes(text_to_words(self.text), self.max_line_width),
             [[0, 1], [2], [3], [4]],
         )
         self.assertEqual(
@@ -136,9 +132,7 @@ class TestSplit(unittest.TestCase):
             [['He', 'was'], ['defenestrated'], ['without'], ['cause.']],
         )
         self.assertEqual(
-            line_by_line_reversed_indexes(
-                text_to_words(self.text), self.max_line_width
-            ),
+            line_by_line_reversed_indexes(text_to_words(self.text), self.max_line_width),
             [[0, 1], [2], [3], [4]],
         )
         self.assertEqual(

@@ -139,14 +139,18 @@ def optimal_line_indexes(words: List[Word], max_width: int, space_width=1) -> Li
         # loop over lineno-th slack
         for slack in reversed(range(lines_bck[lineno][0], lines_fwd[lineno][0] + 1)):
             line_len = line_len + space_width + words[slack].width_min(max_width)
-            line_and_slack_len = line_len + space_width + words[lines_fwd[lineno + 1][0]].width_min(max_width)
+            line_and_slack_len = (
+                line_len + space_width + words[lines_fwd[lineno + 1][0]].width_min(max_width)
+            )
             # cost[slack] has been already initialized to INFINITE
 
             # loop over (lineno+1)-th slack
             for slack_n1 in reversed(
                 range(lines_bck[lineno + 1][0], lines_fwd[lineno + 1][0] + 1)
             ):
-                line_and_slack_len = line_and_slack_len - space_width - words[slack_n1].width_min(max_width)
+                line_and_slack_len = (
+                    line_and_slack_len - space_width - words[slack_n1].width_min(max_width)
+                )
                 if line_and_slack_len <= max_width:
                     # update cost[slack]  # TODO: see Notes.md#Cost_function
                     new_cost = (1.0 + 1.0 / line_and_slack_len) * cost[slack_n1]
