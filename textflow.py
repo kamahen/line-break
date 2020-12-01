@@ -60,7 +60,7 @@ class Word(tuple):
 
     def __repr__(self) -> str:
         """String representation of a Word(text, width)."""
-        return f'Word({self.text!r}, {self.width!r})'
+        return f'Word({self[0]!r}, {self[1]!r})'
 
 
 T1 = TypeVar('T1')
@@ -133,12 +133,12 @@ def optimal_line_indexes(words: List[Word], max_width: int, space_width=1) -> Li
                 lambda total, width: total + space_width + width,
                 (words[i].width_min(max_width) for i in lines_fwd[lineno]),
             )
-            - words[lines_fwd[lineno][0]].width_min(max_width)
+            - 1 - words[lines_fwd[lineno][0]].width_min(max_width)
         )
 
         # loop over lineno-th slack
         for slack in reversed(range(lines_bck[lineno][0], lines_fwd[lineno][0] + 1)):
-            line_len = line_len + space_width + words[slack].width_min(max_width)
+            line_len += space_width + words[slack].width_min(max_width)
             line_and_slack_len = (
                 line_len + space_width + words[lines_fwd[lineno + 1][0]].width_min(max_width)
             )
@@ -222,3 +222,52 @@ def line_by_line_reversed_indexes(
             curr_line.insert(0, i)
     lines.insert(0, curr_line)
     return lines
+
+
+def main() -> int:
+    """Main (uses sys.argv)."""
+    # TODO: move this to __main__.py with proper options processing
+    if len(sys.argv) == 2 and sys.argv[1].isdigit():
+        max_width = int(sys.argv[1])
+        para_break = ''
+        for para in split_paragraphs(sys.stdin.read()):
+            print(para_break, end='')
+            para_break = '\n'
+            # print('===')
+            # print(para)
+            # print('===')
+            # print(text_to_words(para))
+            # print('===')
+            # print(optimal_line_indexes(text_to_words(para), max_width))
+            # print('===')
+            for line in indexes_to_texts(
+                    optimal_line_indexes, text_to_words(para), max_width):
+                # TODO: line_adjust.distribute_spaces, etc.
+                print(' '.join(line))
+        return 0
+    else:
+        for help in [
+                f'{sys.argv[0]} LINEWIDTH',
+                f'  Reads from standard input, formatting each',
+                f'  paragraph to LINEWIDTH characters']:
+            print(help, file=sys.stderr)
+        return 1
+
+
+def split_paragraphs(text):
+    """Split text into an iterator of paragraphs. Assumes Unix-style lines."""
+
+    para = []
+    for line in text.split('\n'):
+        if line == '':
+            if para:
+                yield '\n'.join(para)
+            para = []
+        else:
+            para.append(line)
+    if para:
+        yield '\n'.join(para)
+
+
+if __name__ == '__main__':
+    sys.exit(main())
